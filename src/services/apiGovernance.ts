@@ -1,4 +1,4 @@
-type ApiClass = "amap" | "qweather" | "xiaomiWeather" | "hitokoto" | "free" | "timesync";
+type ApiClass = "amap" | "xiaomiWeather" | "hitokoto" | "free" | "timesync";
 
 type Policy = {
   minIntervalMs: number;
@@ -22,13 +22,6 @@ const DEFAULT_POLICIES: Record<ApiClass, Policy> = {
     samplingRate: 1,
     rateLimitBaseMs: 2 * 60 * 1000,
     maxBackoffLevel: 5,
-  },
-  qweather: {
-    minIntervalMs: 500,
-    softTtlMs: 20 * 1000,
-    samplingRate: 1,
-    rateLimitBaseMs: 30 * 1000,
-    maxBackoffLevel: 4,
   },
   xiaomiWeather: {
     minIntervalMs: 500,

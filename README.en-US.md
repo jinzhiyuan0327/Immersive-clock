@@ -96,7 +96,7 @@ With PWA technology, it supports offline use, automatic updates, and desktop ins
 ### 📚 Study Dashboard
 
 - **Environment Awareness**:
-  - **Real-time Weather**: Integration with QWeather API for minute-level precipitation alerts and weather alerts
+  - **Real-time Weather**: Integration with Xiaomi Weather API for minute-level precipitation alerts and weather alerts
   - **Noise Monitoring**: High frame-rate real-time sampling based on Web Audio API, built-in scoring engine, baseline calibration, maximum threshold settings, and detailed study report with trend charts
 - **Focus Atmosphere**:
   - **Motivational Quotes**: Multi-channel sources support, configurable channel weights and auto-refresh frequency

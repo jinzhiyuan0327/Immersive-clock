@@ -26,14 +26,6 @@ interface ImportMetaEnv {
   readonly VITE_XIAOMI_WEATHER_API_HOST?: string;
   /** 小米天气同源代理前缀（可选，默认使用 /api/xiaomi-weather） */
   readonly VITE_XIAOMI_WEATHER_PROXY_PREFIX?: string;
-  /** 和风私有域主机（旧配置兼容） */
-  readonly VITE_QWEATHER_API_HOST?: string;
-  /** 兼容备用命名 */
-  readonly VITE_QWEATHER_HOST?: string;
-  /** 和风 API Key（旧配置兼容） */
-  readonly VITE_QWEATHER_API_KEY?: string;
-  /** 和风 JWT 鉴权（旧配置兼容） */
-  readonly VITE_QWEATHER_JWT?: string;
 }
 
 /** 扩展 ImportMeta 接口 */

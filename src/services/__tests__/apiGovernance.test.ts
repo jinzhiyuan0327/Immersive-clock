@@ -13,11 +13,11 @@ describe("apiGovernance", () => {
     const runner = vi.fn(async () => ({ ok: true, ts: Date.now() }));
 
     const first = await executeGovernedRequest(
-      { apiClass: "qweather", requestKey: "qweather:/v7/weather/now?location=1,1" },
+      { apiClass: "xiaomiWeather", requestKey: "xiaomiWeather:/weather/all?locationKey=1" },
       runner
     );
     const second = await executeGovernedRequest(
-      { apiClass: "qweather", requestKey: "qweather:/v7/weather/now?location=1,1" },
+      { apiClass: "xiaomiWeather", requestKey: "xiaomiWeather:/weather/all?locationKey=1" },
       runner
     );
 
