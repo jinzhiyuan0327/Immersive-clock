@@ -5,6 +5,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/xiaomi-weather/(.*)",
+      "destination": "https://weatherapi.market.xiaomi.com/$1"
+    },
+    {
       "source": "/docs/(.*)",
       "destination": "/docs/$1"
     },

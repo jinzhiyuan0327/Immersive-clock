@@ -750,13 +750,20 @@ const Weather: React.FC = () => {
 
         const result = await buildWeatherFlow(weatherOptions);
 
-        if (
-          !result.coords ||
-          !result.weather ||
-          result.weather.code !== "200" ||
-          !result.weather.now
-        ) {
-          throw new Error(`天气获取失败: ${result.weather?.code || "unknown"}`);
+        if (!result.coords) {
+          throw new Error("定位失败，无法获取天气");
+        }
+        if (!result.weather) {
+          throw new Error("天气获取失败: 无天气响应");
+        }
+        if (result.weather.error) {
+          throw new Error(`天气获取失败: ${result.weather.error}`);
+        }
+        if (result.weather.code !== "200") {
+          throw new Error(`天气获取失败: ${result.weather.code || "无状态码"}`);
+        }
+        if (!result.weather.now) {
+          throw new Error("天气获取失败: 天气响应缺少实时数据");
         }
 
         const now = result.weather.now;
