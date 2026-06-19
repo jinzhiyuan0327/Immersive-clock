@@ -17,7 +17,7 @@ function xiaomiWeatherAll() {
     forecastDaily: {
       temperature: { value: [{ from: "30", to: "22" }, { from: "29", to: "21" }, { from: "28", to: "20" }] },
       weather: { value: [{ from: "0", to: "1" }, { from: "1", to: "2" }, { from: "7", to: "8" }] },
-      sunRiseSet: { value: [{ from: "05:30", to: "18:55" }] },
+      sunRiseSet: { value: [{ from: "05:30", to: "18:55" }, { from: "05:31", to: "18:56" }, { from: "05:32", to: "18:57" }] },
     },
     forecastHourly: {
       temperature: { value: [{ value: "25" }, { value: "24" }], pubTime: 1781856000000 },
@@ -26,6 +26,15 @@ function xiaomiWeatherAll() {
     aqi: { aqi: "42", pm25: "12", primary: "pm25", src: "Xiaomi" },
     alerts: [{ alertId: "a1", title: "暴雨蓝色预警", type: "暴雨", level: "蓝色", detail: "注意防范" }],
   };
+}
+
+function formatDateFromOffset(offset: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() + offset);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 describe("weatherService", () => {
@@ -83,6 +92,27 @@ describe("weatherService", () => {
     expect(res.code).toBe("200");
     expect(res.hourly?.[0]?.temp).toBe("25");
     expect(res.hourly?.[0]?.text).toBe("晴");
+  });
+
+  it("fetchAstronomySun 根据 date 返回对应日期的日出日落", async () => {
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/wtr-v3/location/city/geo?")) {
+        return Promise.resolve({ ok: true, status: 200, statusText: "OK", text: async () => JSON.stringify(xiaomiCity()) });
+      }
+      if (url.includes("/wtr-v3/weather/all?")) {
+        return Promise.resolve({ ok: true, status: 200, statusText: "OK", text: async () => JSON.stringify(xiaomiWeatherAll()) });
+      }
+      return Promise.reject(new Error(`unexpected url: ${url}`));
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const { fetchAstronomySun } = await import("../weatherService");
+    const res = await fetchAstronomySun("121.5,31.2", formatDateFromOffset(1));
+
+    expect(res.code).toBe("200");
+    expect(res.sunrise).toBe("05:31");
+    expect(res.sunset).toBe("18:56");
   });
 
   it("fetchWeatherNow 捕获 HTTP 错误并返回 error 字段", async () => {

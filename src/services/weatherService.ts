@@ -43,6 +43,7 @@ export type {
 
 export {
   buildLocationFlow,
+  fetchCityLookup,
   getCoordsViaAmapIP,
   getCoordsViaGeolocation,
   getCoordsViaIP,
@@ -50,8 +51,6 @@ export {
   reverseGeocodeAmap,
   reverseGeocodeOSM,
 } from "./locationService";
-
-export { fetchCityLookup } from "./locationService";
 
 export interface WeatherFlowOptions extends LocationFlowOptions {
   fetchDaily3d?: boolean;
@@ -120,6 +119,26 @@ function formatDateFromOffset(offset: number): string {
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
+}
+
+function normalizeDateKey(date: string): string | null {
+  const trimmed = date.trim();
+  const match = /^(\d{4})-?(\d{2})-?(\d{2})$/.exec(trimmed);
+  if (!match) return null;
+  const [, year, month, day] = match;
+  const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+  if (
+    parsed.getFullYear() !== Number(year) ||
+    parsed.getMonth() !== Number(month) - 1 ||
+    parsed.getDate() !== Number(day)
+  ) {
+    return null;
+  }
+  return `${year}${month}${day}`;
+}
+
+function dateKeyFromOffset(offset: number): string {
+  return formatDateFromOffset(offset).replaceAll("-", "");
 }
 
 function weatherText(code: unknown): string | undefined {
@@ -219,13 +238,18 @@ function adaptDaily3d(data: XiaomiWeatherAllResponse): WeatherDaily3dResponse {
   };
 }
 
-function adaptAstronomySun(data: XiaomiWeatherAllResponse): AstronomySunResponse {
+function adaptAstronomySun(data: XiaomiWeatherAllResponse, date?: string): AstronomySunResponse {
   if (data.error) return { error: data.error };
-  const today = data.forecastDaily?.sunRiseSet?.value?.[0];
+  const sunRiseSet = data.forecastDaily?.sunRiseSet?.value || [];
+  const targetDateKey = date ? normalizeDateKey(date) : dateKeyFromOffset(0);
+  if (!targetDateKey) return { error: "Invalid date" };
+  const index = sunRiseSet.findIndex((_, offset) => dateKeyFromOffset(offset) === targetDateKey);
+  if (index < 0) return { error: "Astronomy sun data unavailable for date" };
+  const target = sunRiseSet[index];
   return {
     code: data.status == null || data.status === 0 ? "200" : String(data.status),
-    sunrise: valueToString(today?.from),
-    sunset: valueToString(today?.to),
+    sunrise: valueToString(target?.from),
+    sunset: valueToString(target?.to),
     refer: { sources: ["Xiaomi Weather"] },
   };
 }
@@ -234,6 +258,7 @@ function adaptAirQuality(data: XiaomiWeatherAllResponse): AirQualityCurrentRespo
   if (data.error) return { error: data.error };
   const aqi = data.aqi;
   const indexValue = Number(aqi?.aqi);
+  const adaptedPollutants: NonNullable<AirQualityCurrentResponse["pollutants"]> = [];
   const pollutants = [
     ["pm25", aqi?.pm25],
     ["pm10", aqi?.pm10],
@@ -242,6 +267,15 @@ function adaptAirQuality(data: XiaomiWeatherAllResponse): AirQualityCurrentRespo
     ["o3", aqi?.o3],
     ["co", aqi?.co],
   ] as const;
+  pollutants.forEach(([code, value]) => {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      adaptedPollutants.push({
+        code,
+        concentration: { value: parsed, unit: code === "co" ? "mg/m3" : "μg/m3" },
+      });
+    }
+  });
   return {
     metadata: { tag: normalizeTimestamp(aqi?.pubTime), sources: [aqi?.src || "Xiaomi Weather"] },
     indexes: [
@@ -252,14 +286,7 @@ function adaptAirQuality(data: XiaomiWeatherAllResponse): AirQualityCurrentRespo
         primaryPollutant: aqi?.primary ? { code: aqi.primary } : undefined,
       },
     ],
-    pollutants: pollutants
-      .map(([code, value]) => {
-        const parsed = Number(value);
-        return Number.isFinite(parsed)
-          ? { code, concentration: { value: parsed, unit: code === "co" ? "mg/m3" : "μg/m3" } }
-          : null;
-      })
-      .filter((item): item is { code: string; concentration: { value: number; unit: string } } => item != null),
+    pollutants: adaptedPollutants,
   };
 }
 
@@ -281,14 +308,14 @@ function adaptWeatherAlerts(data: XiaomiWeatherAllResponse): WeatherAlertRespons
 
 function adaptMinutely(data: XiaomiMinutelyResponse | XiaomiWeatherAllResponse): MinutelyPrecipResponse {
   if (data.error) return { error: data.error };
-  const precipitation = "precipitation" in data ? data.precipitation : data.minutely;
+  const precipitation = data.precipitation ?? ("minutely" in data ? data.minutely : undefined);
   const updateTime = normalizeTimestamp(precipitation?.pubTime) || new Date().toISOString();
   const baseMs = Date.parse(updateTime);
   return {
     code: data.status == null || data.status === 0 ? "200" : String(data.status),
     updateTime,
     summary: precipitation?.description,
-    minutely: (precipitation?.value || []).map((value, index) => ({
+    minutely: (precipitation?.value || []).map((value: string | number, index: number) => ({
       fxTime: new Date((Number.isFinite(baseMs) ? baseMs : Date.now()) + index * 60 * 1000).toISOString(),
       precip: valueToString(value) || "0",
       type: "rain",
@@ -333,10 +360,10 @@ export async function fetchWeatherDaily3d(location: string): Promise<WeatherDail
 
 export async function fetchAstronomySun(
   location: string,
-  _date: string
+  date: string
 ): Promise<AstronomySunResponse> {
   try {
-    return adaptAstronomySun(await fetchXiaomiWeatherAll(location));
+    return adaptAstronomySun(await fetchXiaomiWeatherAll(location), date);
   } catch (e: unknown) {
     return { error: String(e) } as AstronomySunResponse;
   }
