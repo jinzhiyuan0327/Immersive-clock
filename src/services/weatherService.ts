@@ -138,7 +138,7 @@ function normalizeDateKey(date: string): string | null {
 }
 
 function dateKeyFromOffset(offset: number): string {
-  return formatDateFromOffset(offset).replaceAll("-", "");
+  return formatDateFromOffset(offset).replace(/-/g, "");
 }
 
 function weatherText(code: unknown): string | undefined {
