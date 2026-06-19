@@ -22,13 +22,17 @@ interface ImportMetaEnv {
   readonly VITE_ENABLE_CLARITY?: string;
   /** Clarity 项目 ID */
   readonly VITE_CLARITY_PROJECT_ID?: string;
-  /** 私有域主机（推荐） */
+  /** 小米天气 API Host（可选，默认使用 weatherapi.market.xiaomi.com） */
+  readonly VITE_XIAOMI_WEATHER_API_HOST?: string;
+  /** 小米天气同源代理前缀（可选，默认使用 /api/xiaomi-weather） */
+  readonly VITE_XIAOMI_WEATHER_PROXY_PREFIX?: string;
+  /** 和风私有域主机（旧配置兼容） */
   readonly VITE_QWEATHER_API_HOST?: string;
   /** 兼容备用命名 */
   readonly VITE_QWEATHER_HOST?: string;
-  /** 和风 API Key（必填） */
-  readonly VITE_QWEATHER_API_KEY: string;
-  /** 可选：JWT 鉴权 */
+  /** 和风 API Key（旧配置兼容） */
+  readonly VITE_QWEATHER_API_KEY?: string;
+  /** 和风 JWT 鉴权（旧配置兼容） */
   readonly VITE_QWEATHER_JWT?: string;
 }
 

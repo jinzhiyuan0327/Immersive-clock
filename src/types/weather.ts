@@ -47,7 +47,114 @@ export interface CityLookupResponse {
     tz?: string;
     type?: string;
     rank?: string;
+    locationKey?: string;
   }>;
+  error?: string;
+}
+
+export interface XiaomiCityLocation {
+  affiliation?: string;
+  key?: string;
+  latitude?: string;
+  locationKey?: string;
+  longitude?: string;
+  name?: string;
+  status?: number;
+  timeZoneShift?: number;
+}
+
+export interface XiaomiValueUnit {
+  value?: string | number;
+  unit?: string;
+}
+
+export interface XiaomiRangeValue {
+  from?: string | number;
+  to?: string | number;
+  unit?: string;
+}
+
+export interface XiaomiWeatherAllResponse {
+  status?: number;
+  updateTime?: number | string;
+  current?: {
+    feelsLike?: XiaomiValueUnit;
+    humidity?: XiaomiValueUnit;
+    pressure?: XiaomiValueUnit;
+    temperature?: XiaomiValueUnit;
+    visibility?: XiaomiValueUnit;
+    weather?: string | number;
+    pubTime?: number | string;
+    wind?: {
+      direction?: XiaomiValueUnit;
+      speed?: XiaomiValueUnit;
+    };
+    uvIndex?: string | number;
+  };
+  forecastDaily?: {
+    precipitationProbability?: { value?: Array<string | number>; status?: number; pubTime?: number | string };
+    temperature?: { value?: XiaomiRangeValue[]; status?: number; pubTime?: number | string };
+    weather?: { value?: XiaomiRangeValue[]; status?: number; pubTime?: number | string };
+    sunRiseSet?: { value?: XiaomiRangeValue[]; status?: number; pubTime?: number | string };
+    aqi?: { value?: XiaomiRangeValue[]; status?: number; pubTime?: number | string };
+    wind?: { value?: Array<{ direction?: XiaomiRangeValue; speed?: XiaomiRangeValue }>; status?: number; pubTime?: number | string };
+  };
+  forecastHourly?: {
+    temperature?: { value?: XiaomiValueUnit[]; status?: number; pubTime?: number | string };
+    weather?: { value?: Array<string | number>; status?: number; pubTime?: number | string };
+    aqi?: { value?: Array<string | number>; status?: number; pubTime?: number | string };
+    wind?: { value?: Array<{ direction?: XiaomiValueUnit; speed?: XiaomiValueUnit }>; status?: number; pubTime?: number | string };
+  };
+  minutely?: {
+    description?: string;
+    pubTime?: number | string;
+    value?: Array<string | number>;
+    rainRemainingMinutes?: number;
+    status?: number;
+  };
+  precipitation?: {
+    description?: string;
+    pubTime?: number | string;
+    value?: Array<string | number>;
+    rainRemainingMinutes?: number;
+    status?: number;
+  };
+  aqi?: {
+    aqi?: string | number;
+    pm25?: string | number;
+    pm10?: string | number;
+    so2?: string | number;
+    no2?: string | number;
+    o3?: string | number;
+    co?: string | number;
+    primary?: string;
+    src?: string;
+    pubTime?: number | string;
+    status?: number;
+    brandInfo?: unknown;
+  };
+  alerts?: Array<{
+    locationKey?: string;
+    alertId?: string;
+    pubTime?: number | string;
+    title?: string;
+    type?: string;
+    level?: string;
+    detail?: string;
+    images?: string[];
+  }>;
+  brandInfo?: unknown;
+  error?: string;
+}
+
+export interface XiaomiMinutelyResponse {
+  status?: number;
+  precipitation?: {
+    description?: string;
+    pubTime?: number | string;
+    value?: Array<string | number>;
+    rainRemainingMinutes?: number;
+  };
   error?: string;
 }
 

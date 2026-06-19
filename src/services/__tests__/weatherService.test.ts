@@ -1,8 +1,33 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
-/**
- * 天气服务单元与集成测试（函数级注释：验证 HTTP 与坐标解析）
- */
+function xiaomiCity() {
+  return [{ name: "上海市", locationKey: "weathercn:101020100", latitude: "31.2", longitude: "121.5" }];
+}
+
+function xiaomiWeatherAll() {
+  return {
+    status: 0,
+    updateTime: 1781856000000,
+    current: {
+      temperature: { value: "25", unit: "℃" },
+      weather: "0",
+      humidity: { value: "60" },
+      pubTime: 1781856000000,
+    },
+    forecastDaily: {
+      temperature: { value: [{ from: "30", to: "22" }, { from: "29", to: "21" }, { from: "28", to: "20" }] },
+      weather: { value: [{ from: "0", to: "1" }, { from: "1", to: "2" }, { from: "7", to: "8" }] },
+      sunRiseSet: { value: [{ from: "05:30", to: "18:55" }] },
+    },
+    forecastHourly: {
+      temperature: { value: [{ value: "25" }, { value: "24" }], pubTime: 1781856000000 },
+      weather: { value: ["0", "1"] },
+    },
+    aqi: { aqi: "42", pm25: "12", primary: "pm25", src: "Xiaomi" },
+    alerts: [{ alertId: "a1", title: "暴雨蓝色预警", type: "暴雨", level: "蓝色", detail: "注意防范" }],
+  };
+}
+
 describe("weatherService", () => {
   const originalFetch = globalThis.fetch;
 
@@ -10,84 +35,78 @@ describe("weatherService", () => {
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
     vi.resetModules();
+    vi.stubEnv("VITE_XIAOMI_WEATHER_API_HOST", "api.example.com");
+    vi.stubEnv("VITE_AMAP_API_KEY", "test-amap-key");
   });
 
   afterEach(() => {
     globalThis.fetch = originalFetch;
   });
 
-  it("fetchWeatherNow 正常返回天气数据", async () => {
-    vi.stubEnv("VITE_QWEATHER_API_HOST", "api.example.com");
-    vi.stubEnv("VITE_QWEATHER_API_KEY", "test-qweather-key");
-    vi.stubEnv("VITE_AMAP_API_KEY", "test-amap-key");
-
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-      text: async () => JSON.stringify({ code: "200", now: { text: "晴", temp: "25" } }),
+  it("fetchWeatherNow 正常返回小米天气适配数据", async () => {
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/wtr-v3/location/city/geo?")) {
+        return Promise.resolve({ ok: true, status: 200, statusText: "OK", text: async () => JSON.stringify(xiaomiCity()) });
+      }
+      if (url.includes("/wtr-v3/weather/all?")) {
+        return Promise.resolve({ ok: true, status: 200, statusText: "OK", text: async () => JSON.stringify(xiaomiWeatherAll()) });
+      }
+      return Promise.reject(new Error(`unexpected url: ${url}`));
     });
     globalThis.fetch = fetchMock as unknown as typeof fetch;
 
     const { fetchWeatherNow } = await import("../weatherService");
-    const res = await fetchWeatherNow("101010100");
+    const res = await fetchWeatherNow("121.5,31.2");
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(res.now?.text).toBe("晴");
     expect(res.now?.temp).toBe("25");
   });
 
-  it("fetchWeatherHourly72h 正常返回小时预报数据", async () => {
-    vi.stubEnv("VITE_QWEATHER_API_HOST", "api.example.com");
-    vi.stubEnv("VITE_QWEATHER_API_KEY", "test-qweather-key");
-    vi.stubEnv("VITE_AMAP_API_KEY", "test-amap-key");
-
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-      text: async () =>
-        JSON.stringify({
-          code: "200",
-          hourly: [{ fxTime: "2026-02-06T05:00+08:00", temp: "8", text: "多云", pop: "10" }],
-        }),
+  it("fetchWeatherHourly72h 正常返回小时预报适配数据", async () => {
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/wtr-v3/location/city/geo?")) {
+        return Promise.resolve({ ok: true, status: 200, statusText: "OK", text: async () => JSON.stringify(xiaomiCity()) });
+      }
+      if (url.includes("/wtr-v3/weather/all?")) {
+        return Promise.resolve({ ok: true, status: 200, statusText: "OK", text: async () => JSON.stringify(xiaomiWeatherAll()) });
+      }
+      return Promise.reject(new Error(`unexpected url: ${url}`));
     });
     globalThis.fetch = fetchMock as unknown as typeof fetch;
 
     const { fetchWeatherHourly72h } = await import("../weatherService");
     const res = await fetchWeatherHourly72h("121.5,31.2");
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(res.code).toBe("200");
-    expect(res.hourly?.[0]?.temp).toBe("8");
-    expect(res.hourly?.[0]?.text).toBe("多云");
+    expect(res.hourly?.[0]?.temp).toBe("25");
+    expect(res.hourly?.[0]?.text).toBe("晴");
   });
 
   it("fetchWeatherNow 捕获 HTTP 错误并返回 error 字段", async () => {
-    vi.stubEnv("VITE_QWEATHER_API_HOST", "api.example.com");
-    vi.stubEnv("VITE_QWEATHER_API_KEY", "test-qweather-key");
-    vi.stubEnv("VITE_AMAP_API_KEY", "test-amap-key");
-
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 500,
-      statusText: "Internal Server Error",
-      text: async () => JSON.stringify({ code: "500", message: "server error" }),
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/wtr-v3/location/city/geo?")) {
+        return Promise.resolve({ ok: true, status: 200, statusText: "OK", text: async () => JSON.stringify(xiaomiCity()) });
+      }
+      return Promise.resolve({
+        ok: false,
+        status: 500,
+        statusText: "Internal Server Error",
+        text: async () => JSON.stringify({ message: "server error" }),
+      });
     });
     globalThis.fetch = fetchMock as unknown as typeof fetch;
 
     const { fetchWeatherNow } = await import("../weatherService");
-    const res = await fetchWeatherNow("101010100");
+    const res = await fetchWeatherNow("121.5,31.2");
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(res.error).toContain("HTTP 500");
   });
 
   it("getCoordsViaIP 能从不同数据源解析坐标", async () => {
-    vi.stubEnv("VITE_QWEATHER_API_HOST", "api.example.com");
-    vi.stubEnv("VITE_QWEATHER_API_KEY", "test-qweather-key");
-    vi.stubEnv("VITE_AMAP_API_KEY", "test-amap-key");
-
     const responses: Record<string, unknown> = {
       "https://ipapi.co/json/": { latitude: 31.2, longitude: 121.5 },
     };
@@ -95,15 +114,8 @@ describe("weatherService", () => {
     const fetchMock = vi.fn((input: RequestInfo | URL) => {
       const url = String(input);
       const data = responses[url];
-      if (!data) {
-        return Promise.reject(new Error(`unexpected url: ${url}`));
-      }
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        text: async () => JSON.stringify(data),
-      });
+      if (!data) return Promise.reject(new Error(`unexpected url: ${url}`));
+      return Promise.resolve({ ok: true, status: 200, statusText: "OK", text: async () => JSON.stringify(data) });
     });
     globalThis.fetch = fetchMock as unknown as typeof fetch;
 
@@ -115,11 +127,7 @@ describe("weatherService", () => {
     expect(coords?.lon).toBeCloseTo(121.5);
   });
 
-  it("buildWeatherFlow 不再请求 GeoAPI，并可从反编码提取城市名", async () => {
-    vi.stubEnv("VITE_QWEATHER_API_HOST", "api.example.com");
-    vi.stubEnv("VITE_QWEATHER_API_KEY", "test-qweather-key");
-    vi.stubEnv("VITE_AMAP_API_KEY", "test-amap-key");
-
+  it("buildWeatherFlow 不再请求和风 GeoAPI，并可从反编码提取城市名", async () => {
     if (!globalThis.localStorage) {
       const store = new Map<string, string>();
       globalThis.localStorage = {
@@ -136,22 +144,12 @@ describe("weatherService", () => {
 
     localStorage.setItem(
       "weather-cache",
-      JSON.stringify({
-        coords: {
-          lat: 31.2,
-          lon: 121.5,
-          source: "geolocation",
-          updatedAt: Date.now(),
-        },
-      })
+      JSON.stringify({ coords: { lat: 31.2, lon: 121.5, source: "geolocation", updatedAt: Date.now() } })
     );
 
     const fetchMock = vi.fn((input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.includes("/geo/v2/")) {
-        return Promise.reject(new Error(`GeoAPI should not be called: ${url}`));
-      }
-
+      if (url.includes("/geo/v2/")) return Promise.reject(new Error(`GeoAPI should not be called: ${url}`));
       if (url.startsWith("https://restapi.amap.com/v3/geocode/regeo?")) {
         return Promise.resolve({
           ok: true,
@@ -160,31 +158,16 @@ describe("weatherService", () => {
           text: async () =>
             JSON.stringify({
               status: "1",
-              regeocode: {
-                formatted_address: "中国 上海市 浦东新区",
-                addressComponent: {
-                  city: "上海市",
-                  district: "浦东新区",
-                  province: "上海市",
-                },
-              },
+              regeocode: { formatted_address: "中国 上海市 浦东新区", addressComponent: { city: "上海市" } },
             }),
         });
       }
-
-      if (url.startsWith("https://api.example.com/v7/weather/now?")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          statusText: "OK",
-          text: async () =>
-            JSON.stringify({
-              code: "200",
-              now: { text: "晴", temp: "25" },
-            }),
-        });
+      if (url.includes("/wtr-v3/location/city/geo?")) {
+        return Promise.resolve({ ok: true, status: 200, statusText: "OK", text: async () => JSON.stringify(xiaomiCity()) });
       }
-
+      if (url.includes("/wtr-v3/weather/all?")) {
+        return Promise.resolve({ ok: true, status: 200, statusText: "OK", text: async () => JSON.stringify(xiaomiWeatherAll()) });
+      }
       return Promise.reject(new Error(`unexpected url: ${url}`));
     });
     globalThis.fetch = fetchMock as unknown as typeof fetch;
@@ -198,7 +181,7 @@ describe("weatherService", () => {
 
     const calledUrls = fetchMock.mock.calls.map((c) => String(c[0]));
     expect(calledUrls.some((u) => u.includes("/geo/v2/"))).toBe(false);
-    expect(calledUrls.some((u) => u.includes("/v7/weather/now"))).toBe(true);
-    expect(calledUrls.some((u) => u.includes("location=121.5%2C31.2"))).toBe(true);
+    expect(calledUrls.some((u) => u.includes("/wtr-v3/weather/all"))).toBe(true);
+    expect(calledUrls.some((u) => u.includes("locationKey=weathercn%3A101020100"))).toBe(true);
   });
 });

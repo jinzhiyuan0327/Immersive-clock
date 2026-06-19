@@ -5,6 +5,7 @@ import type {
   GeolocationDiagnostics,
   GeolocationPermissionState,
   GeolocationResult,
+  XiaomiCityLocation,
 } from "../types/weather";
 import { getAppSettings } from "../utils/appSettings";
 import {
@@ -16,8 +17,8 @@ import {
 } from "../utils/weatherStorage";
 
 import { httpGetJson } from "./httpClient";
-import { qweatherGetJson } from "./qweatherClient";
 import { requireEnv } from "./serviceEnv";
+import { xiaomiWeatherGetJson } from "./xiaomiWeatherClient";
 
 export type {
   AddressInfo,
@@ -311,18 +312,51 @@ export async function getCoordsViaIP(): Promise<Coords | null> {
   return null;
 }
 
+function adaptXiaomiCityLookup(data: unknown): CityLookupResponse {
+  const list = Array.isArray(data) ? (data as XiaomiCityLocation[]) : [];
+  return {
+    code: "200",
+    location: list.map((item) => ({
+      name: item.name,
+      id: item.locationKey || item.key,
+      locationKey: item.locationKey || item.key,
+      lat: item.latitude,
+      lon: item.longitude,
+      adm1: item.affiliation,
+      country: item.affiliation,
+      tz: item.timeZoneShift != null ? String(item.timeZoneShift) : undefined,
+    })),
+  };
+}
+
 /**
- * 使用和风 GeoAPI 进行城市查询
- * 用于“手动城市名 → 经纬度”
+ * 使用小米天气城市搜索接口进行城市查询
  */
 export async function fetchCityLookup(keyword: string): Promise<CityLookupResponse> {
   try {
-    const data = await qweatherGetJson(
-      `/geo/v2/city/lookup?location=${encodeURIComponent(keyword)}&lang=zh&number=5`
+    const data = await xiaomiWeatherGetJson(
+      `/location/city/search?name=${encodeURIComponent(keyword)}&locale=zh_cn`
     );
-    return data as CityLookupResponse;
+    return adaptXiaomiCityLookup(data);
   } catch (e: unknown) {
     return { error: String(e) } as CityLookupResponse;
+  }
+}
+
+export async function fetchXiaomiCityByCoords(
+  lat: number,
+  lon: number
+): Promise<XiaomiCityLocation | null> {
+  try {
+    const data = await xiaomiWeatherGetJson(
+      `/location/city/geo?longitude=${encodeURIComponent(String(lon))}&latitude=${encodeURIComponent(
+        String(lat)
+      )}&locale=zh_cn`
+    );
+    if (Array.isArray(data)) return (data[0] as XiaomiCityLocation | undefined) || null;
+    return (data as XiaomiCityLocation | null) || null;
+  } catch {
+    return null;
   }
 }
 

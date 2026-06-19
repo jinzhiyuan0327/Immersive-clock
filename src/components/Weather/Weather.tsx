@@ -182,7 +182,7 @@ export interface WeatherData {
 
 /**
  * 天气组件（重构版）
- * 完全使用和风天气 + 高德反编码逻辑。
+ * 完全使用小米天气 + 高德反编码逻辑。
  */
 const Weather: React.FC = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
@@ -716,7 +716,7 @@ const Weather: React.FC = () => {
   }, []);
 
   /**
-   * 初始化天气数据（通过和风 + 高德反编码）
+   * 初始化天气数据（通过小米天气 + 高德反编码）
    */
   const initializeWeather = useCallback(
     async (options?: WeatherFlowOptions) => {
