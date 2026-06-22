@@ -2,11 +2,11 @@
 
 ## 运行入口
 
-- 单元测试：`cnpm run test`
-- 单测 + 覆盖率：`cnpm run test:coverage`
-- 端到端测试：`cnpm run test:e2e`
+- 单元测试：`npm run test`
+- 单测 + 覆盖率：`npm run test:coverage`
+- 端到端测试：`npm run test:e2e`
   - 默认使用系统 Edge（项目：`msedge`），不自动下载 Playwright 浏览器
-  - 如需运行 Playwright 自带浏览器：设置 `PW_BUNDLED_BROWSERS=1` 后再运行 `cnpm run test:e2e`（会执行 `playwright install`）
+  - 如需运行 Playwright 自带浏览器：设置 `PW_BUNDLED_BROWSERS=1` 后再运行 `npm run test:e2e`（会执行 `playwright install`）
 
 ## Vitest（单元测试）
 

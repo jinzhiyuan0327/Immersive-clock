@@ -12,18 +12,18 @@
 ## 依赖安装失败
 
 确认 Node.js 版本满足 `>=20.19.0`。项目锁文件是 `package-lock.json`，不要混用其他
-包管理器锁文件。网络受限时，先确认 npm/cnpm registry 配置，再重试安装。
+包管理器锁文件。网络受限时，先确认 npm registry 配置，再重试安装。
 
 ## Dev server 无法访问
 
 Vite dev server 默认监听 `127.0.0.1:3005`。如果端口被占用，先停止占用进程或临时指定
-其他端口。Electron 模式使用 `cnpm run dev:electron`，不要用普通 Web dev server 期待
+其他端口。Electron 模式使用 `npm run dev:electron`，不要用普通 Web dev server 期待
 主进程能力可用。
 
 ## Playwright E2E 浏览器问题
 
 项目默认使用系统 Edge。如果本机没有可用 Edge，或需要 Playwright 自带浏览器，设置
-`PW_BUNDLED_BROWSERS=1` 后运行 `cnpm run test:e2e`，预检脚本会处理浏览器安装。
+`PW_BUNDLED_BROWSERS=1` 后运行 `npm run test:e2e`，预检脚本会处理浏览器安装。
 
 ## PWA 更新或缓存异常
 
@@ -31,7 +31,7 @@ PWA 使用自动更新和运行时缓存。排查时可以：
 
 - 在浏览器 DevTools 的 Application 面板检查 service worker 状态。
 - 清理站点数据后重新加载。
-- 使用 `cnpm run build` + `cnpm run preview` 验证生产模式。
+- 使用 `npm run build` + `npm run preview` 验证生产模式。
 - 检查 `vite.config.ts` 中 Workbox runtimeCaching 和 `public/manifest.json`。
 
 ## 天气请求失败
@@ -70,7 +70,7 @@ PWA 使用自动更新和运行时缓存。排查时可以：
 
 ## Electron 行为与 Web 不一致
 
-先确认当前运行命令是否为 `cnpm run dev:electron` 或 Electron 构建产物。Electron 相关
+先确认当前运行命令是否为 `npm run dev:electron` 或 Electron 构建产物。Electron 相关
 能力集中在 `electron/`：
 
 - 主进程窗口、菜单、生命周期在 `electron/main.ts`。

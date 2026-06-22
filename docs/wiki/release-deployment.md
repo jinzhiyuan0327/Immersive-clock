@@ -6,7 +6,7 @@
 ## Web/PWA 构建
 
 ```bash
-cnpm run build
+npm run build
 ```
 
 该命令执行 Vite 构建并运行 `scripts/postbuild.mjs`，输出目录为 `dist/`。PWA 配置位于
@@ -23,7 +23,7 @@ Web 构建包含：
 ## 本地预览
 
 ```bash
-cnpm run preview
+npm run preview
 ```
 
 用于预览生产构建结果。涉及 PWA、静态资源路径、路由 fallback 或缓存策略时，建议使用
@@ -32,8 +32,8 @@ cnpm run preview
 ## Electron 构建与打包
 
 ```bash
-cnpm run build:electron
-cnpm run dist:electron
+npm run build:electron
+npm run dist:electron
 ```
 
 - `build:electron` 会清理 `dist-electron/`，以 Electron 模式构建渲染层、主进程和预加载脚本。

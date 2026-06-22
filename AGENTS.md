@@ -8,13 +8,13 @@ Immersive Clock is a React 19 + TypeScript + Vite app with PWA and Electron targ
 
 Use Node `>=20.19.0`.
 
-- `cnpm run dev`: start the Vite web dev server.
-- `cnpm run dev:electron`: start Electron development mode.
-- `cnpm run build`: build the web/PWA output.
-- `cnpm run build:electron`: build Electron output.
-- `cnpm run preview`: preview the production web build.
-- `cnpm run lint` / `cnpm run lint:fix`: check or fix ESLint issues.
-- `cnpm run format`: format code and docs with Prettier.
+- `npm run dev`: start the Vite web dev server.
+- `npm run dev:electron`: start Electron development mode.
+- `npm run build`: build the web/PWA output.
+- `npm run build:electron`: build Electron output.
+- `npm run preview`: preview the production web build.
+- `npm run lint` / `npm run lint:fix`: check or fix ESLint issues.
+- `npm run format`: format code and docs with Prettier.
 
 ## Coding Style & Naming Conventions
 
@@ -22,7 +22,7 @@ Use TypeScript strict mode, functional React components, CSS Modules, and semant
 
 ## Testing Guidelines
 
-Vitest covers unit/component tests; Playwright covers browser flows. Name unit tests `*.test.ts(x)` or place them in `__tests__/`; name E2E files `*.e2e.spec.ts`. Run `cnpm run test`, `cnpm run test:coverage`, or `cnpm run test:e2e` as needed. Update `docs/testing-map.md` when tests change.
+Vitest covers unit/component tests; Playwright covers browser flows. Name unit tests `*.test.ts(x)` or place them in `__tests__/`; name E2E files `*.e2e.spec.ts`. Run `npm run test`, `npm run test:coverage`, or `npm run test:e2e` as needed. Update `docs/testing-map.md` when tests change.
 
 ## Agent-Specific Workflow
 
