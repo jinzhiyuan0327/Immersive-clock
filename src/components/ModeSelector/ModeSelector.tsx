@@ -1,8 +1,13 @@
+import {
+  BookOpen as StudyIcon,
+  Clock as ClockIcon,
+  Timer as CountdownIcon,
+  TimerReset as WatchIcon,
+} from "lucide-react";
 import React, { useCallback } from "react";
 
-import { useAppState, useAppDispatch } from "../../contexts/AppContext";
+import { useAppDispatch, useAppState } from "../../contexts/AppContext";
 import { AppMode } from "../../types";
-import { ClockIcon, CountdownIcon, WatchIcon, StudyIcon } from "../Icons";
 import { LightButton } from "../LightControls/LightControls";
 
 import styles from "./ModeSelector.module.css";

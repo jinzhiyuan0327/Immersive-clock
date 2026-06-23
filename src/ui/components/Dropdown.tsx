@@ -37,6 +37,10 @@ export interface DropdownProps {
   disabled?: boolean;
   maxMenuHeight?: number;
   menuWidth?: number | string;
+  width?: number | string;
+  variant?: "default" | "ghost";
+  renderLabel?: (option: DropdownOption) => string;
+  portalContainer?: HTMLElement | null;
   className?: string;
   onChange?: (value: DropdownValue | DropdownValue[] | undefined) => void;
 }
@@ -71,6 +75,9 @@ export function Dropdown({
   disabled = false,
   maxMenuHeight = 260,
   menuWidth,
+  width,
+  renderLabel,
+  portalContainer,
   className,
   onChange,
 }: DropdownProps) {
@@ -121,7 +128,7 @@ export function Dropdown({
 
   const selectedLabels = flattenedOptions
     .filter((option) => selectedValues.has(option.value))
-    .map((option) => option.label);
+    .map((option) => (renderLabel ? renderLabel(option) : option.label));
 
   const updatePosition = useCallback(() => {
     const trigger = triggerRef.current;
@@ -131,7 +138,7 @@ export function Dropdown({
     }
 
     const rect = trigger.getBoundingClientRect();
-    const resolvedWidth = formatMenuWidth(menuWidth, rect.width);
+    const resolvedWidth = formatMenuWidth(menuWidth ?? width, rect.width);
     const numericWidth = typeof resolvedWidth === "number" ? resolvedWidth : rect.width;
     const left = Math.max(8, Math.min(rect.left, window.innerWidth - numericWidth - 8));
 
@@ -140,7 +147,7 @@ export function Dropdown({
       top: rect.bottom + 8,
       width: resolvedWidth,
     });
-  }, [menuWidth]);
+  }, [menuWidth, width]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -285,7 +292,7 @@ export function Dropdown({
               ))}
             </div>
           </div>,
-          document.body,
+          portalContainer ?? document.body,
         )
       : null;
 
@@ -313,6 +320,7 @@ export function Dropdown({
           !selectedLabels.length && styles.dropdownPlaceholder,
         )}
         disabled={disabled}
+        style={width ? { width } : undefined}
         onClick={() => {
           setIsOpen((open) => !open);
           setQuery("");

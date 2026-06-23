@@ -1,5 +1,5 @@
 import { marked } from "marked";
-import React, { useCallback, useState, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   AnnouncementModalProps,
@@ -7,12 +7,15 @@ import {
   AnnouncementTabConfig,
   MarkdownDocument,
 } from "../../types";
+import {
+  Button as FormButton,
+  Checkbox as FormCheckbox,
+  Inline as FormButtonGroup,
+  Modal,
+  Tabs,
+} from "../../ui";
 import { setDontShowForWeek } from "../../utils/announcementStorage";
 import { logger } from "../../utils/logger";
-import { FormButton, FormButtonGroup, FormCheckbox } from "../FormComponents/FormComponents";
-import Modal from "../Modal/Modal";
-import modalStyles from "../Modal/Modal.module.css";
-import { Tabs } from "../Tabs/Tabs";
 
 import styles from "./AnnouncementModal.module.css";
 
@@ -163,7 +166,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
     if (!isOpen) return;
     const root = containerRef.current;
     if (root) {
-      const bodyEl = root.closest(`.${modalStyles.modalBody}`) as HTMLElement | null;
+      const bodyEl = root.closest("[data-ui-modal-body]") as HTMLElement | null;
       if (bodyEl) bodyEl.scrollTo({ top: 0, behavior: "smooth" });
       const inner = root.querySelector(`.${styles.content}`) as HTMLElement | null;
       if (inner) inner.scrollTo({ top: 0 });

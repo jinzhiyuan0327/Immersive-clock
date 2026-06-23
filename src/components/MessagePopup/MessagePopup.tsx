@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 
 import type { MessagePopupType } from "../../types/messagePopup";
-import { FormButton } from "../FormComponents";
+import { Button as FormButton } from "../../ui";
 import { LightButton } from "../LightControls/LightControls";
 
 import styles from "./messagePopup.module.css";

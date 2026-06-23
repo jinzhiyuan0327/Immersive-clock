@@ -1,27 +1,27 @@
+import {
+  File as FileIcon,
+  Pencil as EditIcon,
+  RefreshCw as RefreshIcon,
+  RotateCcw as ResetIcon,
+  Settings as SettingsIcon,
+  ToggleLeft as ToggleOffIcon,
+  ToggleRight as ToggleOnIcon,
+  Trash2 as TrashIcon,
+} from "lucide-react";
 import React, { useState, useCallback, useEffect, useRef } from "react";
 
-import { useAppState, useAppDispatch } from "../../contexts/AppContext";
-import { QuoteSourceConfig, HitokotoCategory, HITOKOTO_CATEGORY_LIST } from "../../types";
-import { logger } from "../../utils/logger";
+import { useAppDispatch, useAppState } from "../../contexts/AppContext";
+import { HitokotoCategory, HITOKOTO_CATEGORY_LIST, QuoteSourceConfig } from "../../types";
 import {
+  Button as FormButton,
+  Checkbox as FormCheckbox,
   FormSection,
-  FormInput,
-  FormTextarea,
-  FormButton,
-  FormButtonGroup,
-  FormCheckbox,
-  FormSegmented,
-} from "../FormComponents";
-import {
-  ToggleOffIcon,
-  ToggleOnIcon,
-  SettingsIcon,
-  RefreshIcon,
-  EditIcon,
-  ResetIcon,
-  FileIcon,
-  TrashIcon,
-} from "../Icons";
+  Inline as FormButtonGroup,
+  Input as FormInput,
+  RadioGroup as FormSegmented,
+  Textarea as FormTextarea,
+} from "../../ui";
+import { logger } from "../../utils/logger";
 
 import styles from "./QuoteChannelManager.module.css";
 

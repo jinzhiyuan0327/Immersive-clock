@@ -11,32 +11,24 @@
 .sidebar {
   background: var(--ui-color-bg-raised);
   border-right: 1px solid var(--ui-color-border);
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 24px;
   min-width: 0;
   overflow: auto;
   padding: 20px;
 }
 
-.brand {
-  display: grid;
-  gap: 10px;
-}
-
-.brand h1,
+.sidebar h1,
 .header h2,
 .sectionHeader h2,
 .cardStack h3 {
   margin: 0;
 }
 
-.brand h1 {
+.sidebar h1 {
   font-size: 24px;
   line-height: 1.1;
 }
 
-.brand p,
+.sidebar p,
 .muted,
 .modalText {
   color: var(--ui-color-text-muted);
@@ -45,9 +37,9 @@
 }
 
 .nav {
+  align-content: start;
   display: grid;
   gap: 8px;
-  align-content: start;
 }
 
 .navItem,
@@ -95,7 +87,6 @@
   display: block;
   font-size: var(--ui-font-size-xs);
   font-weight: 700;
-  margin-bottom: 6px;
 }
 
 .section {
@@ -118,43 +109,15 @@
 }
 
 .sectionHeader span,
-.brand p,
 .muted {
   color: var(--ui-color-text-muted);
   font-size: var(--ui-font-size-sm);
 }
 
-.gridTwo,
-.componentGrid,
-.gridTwoCompact {
-  display: grid;
-  gap: 14px;
-  min-width: 0;
-}
-
-.gridTwo {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.componentGrid {
-  grid-template-columns: repeat(3, minmax(260px, 1fr));
-}
-
-.gridTwoCompact {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .cardStack {
+  align-content: start;
   display: grid;
   gap: 14px;
-  align-content: start;
-}
-
-.inlineRow {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
 }
 
 .swatches {
@@ -176,28 +139,13 @@
 }
 
 .swatch span,
-.swatch code {
+.swatch code,
+.spaceToken {
   color: var(--ui-color-text-muted);
   font-family: var(--ui-font-number);
   font-size: 10px;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.typeRow {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.typeRow > div {
-  display: grid;
-  gap: 8px;
-}
-
-.typeRow span {
-  color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-sm);
 }
 
 .typeSample {
@@ -211,60 +159,16 @@
   line-height: 1;
 }
 
-.tokenRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.tokenRow span {
+.spaceToken {
   align-items: center;
-  color: var(--ui-color-text-muted);
   display: inline-flex;
-  font-family: var(--ui-font-number);
-  font-size: var(--ui-font-size-xs);
   gap: 7px;
 }
 
-.tokenRow i {
+.spaceToken i {
   background: var(--ui-color-text-muted);
   border-radius: 2px;
   display: inline-block;
-}
-
-.shellStack {
-  display: grid;
-  gap: 12px;
-}
-
-.popoverDemo {
-  display: grid;
-  gap: 10px;
-}
-
-.popoverDemo span {
-  color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-sm);
-  line-height: 1.5;
-}
-
-.contextTarget {
-  align-items: center;
-  background: #0f1115;
-  border: 1px dashed var(--ui-color-border-strong);
-  border-radius: var(--ui-radius-md);
-  color: var(--ui-color-text-muted);
-  display: flex;
-  justify-content: center;
-  min-height: 88px;
-  padding: 14px;
-  text-align: center;
-}
-
-.centerLabel {
-  color: var(--ui-color-text);
-  font-family: var(--ui-font-number);
-  font-size: 34px;
 }
 
 @media (max-width: 1180px) {
@@ -289,12 +193,6 @@
   .navItemActive {
     flex: 1 1 130px;
   }
-
-  .gridTwo,
-  .componentGrid,
-  .gridTwoCompact {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 720px) {
@@ -304,8 +202,7 @@
   }
 
   .header,
-  .sectionHeader,
-  .typeRow {
+  .sectionHeader {
     align-items: stretch;
     display: grid;
   }

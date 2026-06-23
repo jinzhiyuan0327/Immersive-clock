@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
+import { Button as FormButton, Modal } from "../../ui";
 import { getNoiseControlSettings } from "../../utils/noiseControlSettings";
 import { readNoiseSlices, subscribeNoiseSlicesUpdated } from "../../utils/noiseSliceService";
-import { FormButton, FormSection as _FormSection } from "../FormComponents";
-import Modal from "../Modal/Modal";
 
 import styles from "./NoiseReportModal.module.css";
 

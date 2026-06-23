@@ -1,15 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
 
-import { useAppState, useAppDispatch } from "../../../contexts/AppContext";
+
+import { useAppDispatch, useAppState } from "../../../contexts/AppContext";
 import { CountdownItem } from "../../../types";
-import {
-  FormRow,
-  FormInput,
-  FormButton,
-  FormButtonGroup,
-  FormSlider,
-  FormSegmented,
-} from "../../FormComponents";
+import { Button as FormButton, Inline as FormButtonGroup, Inline as FormRow, Input as FormInput, RadioGroup as FormSegmented, Slider as FormSlider } from "../../../ui";
 import styles from "../SettingsPanel.module.css";
 
 interface CountdownDraftItem {

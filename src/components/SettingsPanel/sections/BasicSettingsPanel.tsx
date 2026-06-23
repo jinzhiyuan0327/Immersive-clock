@@ -1,7 +1,20 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-import { useAppState, useAppDispatch } from "../../../contexts/AppContext";
+
+import { useAppDispatch, useAppState } from "../../../contexts/AppContext";
 import { AppMode, CountdownItem } from "../../../types";
+import {
+  Button as FormButton,
+  Checkbox as FormCheckbox,
+  Dropdown,
+  FormSection,
+  Inline as FormButtonGroup,
+  Inline as FormRow,
+  Input as FormFilePicker,
+  Input as FormInput,
+  RadioGroup as FormSegmented,
+  Slider as FormSlider,
+} from "../../../ui";
 import {
   getAppSettings,
   updateGeneralSettings,
@@ -11,22 +24,10 @@ import {
 import { resolveStartupMode } from "../../../utils/startupMode";
 import { readStudyBackground, saveStudyBackground } from "../../../utils/studyBackgroundStorage";
 import {
+  ImportedFontMeta,
   importFontFile,
   loadImportedFonts,
-  ImportedFontMeta,
 } from "../../../utils/studyFontStorage";
-import { Dropdown } from "../../Dropdown/Dropdown";
-import {
-  FormSection,
-  FormInput,
-  FormFilePicker,
-  FormSegmented,
-  FormButton,
-  FormButtonGroup,
-  FormCheckbox,
-  FormRow,
-  FormSlider,
-} from "../../FormComponents";
 import ScheduleSettings from "../../ScheduleSettings";
 import styles from "../SettingsPanel.module.css";
 

@@ -4,7 +4,7 @@ import { classNames } from "../utils/classNames";
 
 import styles from "./primitives.module.css";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "success";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -19,6 +19,7 @@ const variantClassMap: Record<ButtonVariant, string> = {
   secondary: styles.buttonSecondary,
   ghost: styles.buttonGhost,
   danger: styles.buttonDanger,
+  success: styles.buttonPrimary,
 };
 
 const sizeClassMap: Record<ButtonSize, string> = {

@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 
-import { useAppState, useAppDispatch } from "../../../contexts/AppContext";
-import { FormSection, FormSlider } from "../../FormComponents";
+import { useAppDispatch, useAppState } from "../../../contexts/AppContext";
+import { FormSection, Slider as FormSlider } from "../../../ui";
 import { QuoteChannelManager } from "../../QuoteChannelManager";
 import styles from "../SettingsPanel.module.css";
 

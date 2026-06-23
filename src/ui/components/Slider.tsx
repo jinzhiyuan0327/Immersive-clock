@@ -10,6 +10,7 @@ export interface SliderProps
   onChange: (value: number) => void;
   label?: string;
   formatValue?: (value: number) => string;
+  showRange?: boolean;
   rangeLabels?: [string, string];
 }
 
@@ -21,6 +22,7 @@ export function Slider({
   onChange,
   label,
   formatValue,
+  showRange = true,
   rangeLabels,
   ...props
 }: SliderProps) {
@@ -44,10 +46,10 @@ export function Slider({
         onChange={(event) => onChange(Number(event.target.value))}
         {...props}
       />
-      {rangeLabels && (
+      {showRange && (
         <div className={styles.sliderTicks} aria-hidden="true">
-          <span>{rangeLabels[0]}</span>
-          <span>{rangeLabels[1]}</span>
+          <span>{rangeLabels ? rangeLabels[0] : formatValue ? formatValue(min) : min}</span>
+          <span>{rangeLabels ? rangeLabels[1] : formatValue ? formatValue(max) : max}</span>
         </div>
       )}
     </div>

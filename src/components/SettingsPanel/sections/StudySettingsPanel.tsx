@@ -1,7 +1,17 @@
+import { Volume2 as VolumeIcon, VolumeX as VolumeMuteIcon } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
 import { DEFAULT_NOISE_REPORT_RETENTION_DAYS } from "../../../constants/noiseReport";
 import { useAppState } from "../../../contexts/AppContext";
+import {
+  Button as FormButton,
+  Checkbox as FormCheckbox,
+  FormSection,
+  Inline as FormButtonGroup,
+  Inline as FormRow,
+  Input as FormInput,
+  Slider as FormSlider,
+} from "../../../ui";
 import { getAppSettings, updateNoiseSettings } from "../../../utils/appSettings";
 import { pushErrorCenterRecord } from "../../../utils/errorCenter";
 import { logger } from "../../../utils/logger";
@@ -20,16 +30,6 @@ import {
   SETTINGS_EVENTS,
   subscribeSettingsEvent,
 } from "../../../utils/settingsEvents";
-import {
-  FormSection,
-  FormButton,
-  FormButtonGroup,
-  FormCheckbox,
-  FormInput,
-  FormSlider,
-  FormRow,
-} from "../../FormComponents";
-import { VolumeIcon, VolumeMuteIcon } from "../../Icons";
 import { NoiseStatsSummary } from "../../NoiseSettings/NoiseStatsSummary";
 import { RealTimeNoiseChart } from "../../NoiseSettings/RealTimeNoiseChart";
 import styles from "../SettingsPanel.module.css";

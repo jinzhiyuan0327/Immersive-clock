@@ -1,9 +1,15 @@
+import {
+  Maximize2 as MaximizeIcon,
+  Minimize2 as MinimizeIcon,
+  Pause as PauseIcon,
+  Play as PlayIcon,
+  RotateCcw as ResetIcon,
+} from "lucide-react";
 import React, { useCallback } from "react";
 
-import { useAppState, useAppDispatch } from "../../contexts/AppContext";
+import { useAppDispatch, useAppState } from "../../contexts/AppContext";
 import { useFullscreen } from "../../hooks/useFullscreen";
-import { FormButton } from "../FormComponents";
-import { PlayIcon, PauseIcon, ResetIcon, MaximizeIcon, MinimizeIcon } from "../Icons";
+import { Button as FormButton } from "../../ui";
 
 import styles from "./ControlBar.module.css";
 

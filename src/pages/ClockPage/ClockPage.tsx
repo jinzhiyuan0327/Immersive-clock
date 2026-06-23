@@ -412,10 +412,7 @@ export function ClockPage() {
         </button>
       )}
 
-      {/* 设置按钮 - 只在自习模式下显示 */}
-      {mode === "study" && (
-        <SettingsButton onClick={handleSettingsClick} isVisible={!isModalOpen && !showSettings} />
-      )}
+      <SettingsButton onClick={handleSettingsClick} isVisible={!isModalOpen && !showSettings} />
 
       {/* 设置面板 */}
       <SettingsPanel isOpen={showSettings} onClose={handleSettingsClose} />

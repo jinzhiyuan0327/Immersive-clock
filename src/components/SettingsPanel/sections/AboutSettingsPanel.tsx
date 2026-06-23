@@ -1,25 +1,25 @@
+import { File as FileIcon, Save as SaveIcon, Trash2 as TrashIcon } from "lucide-react";
 import React, { useEffect, useCallback, useMemo, useRef, useState } from "react";
 
 import pkg from "../../../../package.json";
 import { useAppDispatch, useAppState } from "../../../contexts/AppContext";
-import { getAppSettings, APP_SETTINGS_KEY } from "../../../utils/appSettings";
+import {
+  Button as FormButton,
+  Checkbox as FormCheckbox,
+  FormSection,
+  Inline as FormButtonGroup,
+  Inline as FormRow,
+  RadioGroup as FormSegmented,
+} from "../../../ui";
+import { APP_SETTINGS_KEY, getAppSettings } from "../../../utils/appSettings";
 import {
   clearErrorCenter,
+  ErrorCenterMode,
   exportErrorCenterJson,
   getErrorCenterRecords,
   subscribeErrorCenter,
-  type ErrorCenterMode,
 } from "../../../utils/errorCenter";
 import { getWeatherCache } from "../../../utils/weatherStorage";
-import {
-  FormSection,
-  FormButton,
-  FormButtonGroup,
-  FormCheckbox,
-  FormRow,
-  FormSegmented,
-} from "../../FormComponents";
-import { TrashIcon, SaveIcon, FileIcon } from "../../Icons";
 import styles from "../SettingsPanel.module.css";
 
 // 版本建议优先从环境变量（vite.config 注入）读取，回退到 package.json
