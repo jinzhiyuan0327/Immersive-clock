@@ -2,20 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { DEFAULT_NOISE_REPORT_RETENTION_DAYS } from "../../constants/noiseReport";
 import type { NoiseSliceSummary } from "../../types/noise";
-import { DEFAULT_SCHEDULE, StudyPeriod } from "../../types/studySchedule";
-import {
-  Button as FormButton,
-  FormSection,
-  Inline as FormButtonGroup,
-  Inline as FormRow,
-  Input as FormInput,
-  Modal,
-} from "../../ui";
+import { StudyPeriod, DEFAULT_SCHEDULE } from "../../types/studySchedule";
 import { formatDateTimeLocal, parseDateTimeLocal } from "../../utils/dateTimeLocal";
 import { buildNoiseHistoryListItems } from "../../utils/noiseHistoryBuilder";
 import { getNoiseReportSettings } from "../../utils/noiseReportSettings";
 import { readNoiseSlices, subscribeNoiseSlicesUpdated } from "../../utils/noiseSliceService";
 import { readStudySchedule } from "../../utils/studyScheduleStorage";
+import { FormButton, FormButtonGroup, FormInput, FormRow, FormSection } from "../FormComponents";
+import Modal from "../Modal/Modal";
 import type { NoiseReportPeriod } from "../NoiseReportModal/NoiseReportModal";
 
 import styles from "./NoiseHistoryModal.module.css";

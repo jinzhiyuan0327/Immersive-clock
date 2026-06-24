@@ -1,19 +1,19 @@
-import { RefreshCw as RefreshIcon } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppState } from "../../../contexts/AppContext";
-import {
-  Button as FormButton,
-  Checkbox as FormCheckbox,
-  FormSection,
-  Inline as FormButtonGroup,
-  Inline as FormRow,
-  Input as FormInput,
-  RadioGroup as FormSegmented,
-} from "../../../ui";
 import { getAppSettings, updateGeneralSettings } from "../../../utils/appSettings";
 import { broadcastSettingsEvent, SETTINGS_EVENTS } from "../../../utils/settingsEvents";
 import { getWeatherCache } from "../../../utils/weatherStorage";
+import {
+  FormSection,
+  FormButton,
+  FormButtonGroup,
+  FormCheckbox,
+  FormRow,
+  FormSegmented,
+  FormInput,
+} from "../../FormComponents";
+import { RefreshIcon } from "../../Icons";
 import styles from "../SettingsPanel.module.css";
 
 export interface WeatherSettingsPanelProps {

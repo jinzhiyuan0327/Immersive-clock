@@ -1,22 +1,5 @@
-import {
-  File as FileIcon,
-  Plus as PlusIcon,
-  RefreshCw as RefreshIcon,
-  RotateCcw as ResetIcon,
-  Save as SaveIcon,
-  Trash2 as TrashIcon,
-} from "lucide-react";
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 
-import {
-  Button as FormButton,
-  FormSection,
-  Inline as FormButtonGroup,
-  Inline as FormRow,
-  Input as FormFilePicker,
-  Input as FormInput,
-  Modal,
-} from "../../ui";
 import { logger } from "../../utils/logger";
 import { broadcastSettingsEvent, SETTINGS_EVENTS } from "../../utils/settingsEvents";
 import {
@@ -32,6 +15,16 @@ import {
   sortScheduleByStartTime,
   validateStudySchedule,
 } from "../../utils/studyScheduleValidation";
+import {
+  FormSection,
+  FormFilePicker,
+  FormInput,
+  FormButton,
+  FormButtonGroup,
+  FormRow,
+} from "../FormComponents";
+import { FileIcon, PlusIcon, RefreshIcon, ResetIcon, SaveIcon, TrashIcon } from "../Icons";
+import { Modal } from "../Modal";
 import { StudyPeriod, DEFAULT_SCHEDULE } from "../StudyStatus";
 
 import styles from "./ScheduleSettings.module.css";

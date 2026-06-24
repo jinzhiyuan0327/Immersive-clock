@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 import { DEFAULT_NOISE_REPORT_RETENTION_DAYS } from "../../constants/noiseReport";
-import { FormSection } from "../../ui";
 import { getNoiseReportSettings } from "../../utils/noiseReportSettings";
 import { readNoiseSlices, subscribeNoiseSlicesUpdated } from "../../utils/noiseSliceService";
 import { SETTINGS_EVENTS, subscribeSettingsEvent } from "../../utils/settingsEvents";
+import { FormSection } from "../FormComponents";
 
 import styles from "./NoiseSettings.module.css";
 

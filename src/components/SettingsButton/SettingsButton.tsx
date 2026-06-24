@@ -1,6 +1,6 @@
-import { Settings as SettingsIcon } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
 
+import { SettingsIcon } from "../Icons";
 
 import styles from "./SettingsButton.module.css";
 

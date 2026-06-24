@@ -1,20 +1,12 @@
-import {
-  Bell,
-  Cloud,
-  Gauge,
-  Home,
-  Info,
-  LayoutGrid,
-  MessageSquareText,
-  Palette,
-  SlidersHorizontal,
-} from "lucide-react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 
-import { useAppDispatch, useAppState } from "../../contexts/AppContext";
-import { Button, Modal } from "../../ui";
+import { useAppState, useAppDispatch } from "../../contexts/AppContext";
 import { logger } from "../../utils/logger";
 import { broadcastSettingsEvent, SETTINGS_EVENTS } from "../../utils/settingsEvents";
+import { FormButton, FormButtonGroup } from "../FormComponents";
+import { Modal } from "../Modal";
+import modalStyles from "../Modal/Modal.module.css";
+import { Tabs } from "../Tabs/Tabs";
 
 import AboutSettingsPanel from "./sections/AboutSettingsPanel";
 import BasicSettingsPanel from "./sections/BasicSettingsPanel";
@@ -23,103 +15,39 @@ import StudySettingsPanel from "./sections/StudySettingsPanel";
 import WeatherSettingsPanel from "./sections/WeatherSettingsPanel";
 import styles from "./SettingsPanel.module.css";
 
-type SettingsCategory = "basic" | "weather" | "monitor" | "quotes" | "about";
-type TopSection = "controls" | "feedback" | "layout" | "preview";
-
+/**
+ * 设置面板属性
+ * - `isOpen`：是否显示设置面板
+ * - `onClose`：关闭面板的回调
+ */
 interface SettingsPanelProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const topSections: Array<{
-  value: TopSection;
-  label: string;
-  icon: React.ReactNode;
-  defaultCategory: SettingsCategory;
-}> = [
-  {
-    value: "controls",
-    label: "控件",
-    icon: <SlidersHorizontal size={18} aria-hidden="true" />,
-    defaultCategory: "basic",
-  },
-  {
-    value: "feedback",
-    label: "反馈",
-    icon: <Bell size={18} aria-hidden="true" />,
-    defaultCategory: "weather",
-  },
-  {
-    value: "layout",
-    label: "布局",
-    icon: <Palette size={18} aria-hidden="true" />,
-    defaultCategory: "quotes",
-  },
-  {
-    value: "preview",
-    label: "页面预览",
-    icon: <LayoutGrid size={18} aria-hidden="true" />,
-    defaultCategory: "about",
-  },
-];
-
-const categoryItems: Array<{
-  value: SettingsCategory;
-  label: string;
-  icon: React.ReactNode;
-  section: TopSection;
-}> = [
-  {
-    value: "basic",
-    label: "基础设置",
-    icon: <Home size={20} aria-hidden="true" />,
-    section: "controls",
-  },
-  {
-    value: "weather",
-    label: "天气设置",
-    icon: <Cloud size={20} aria-hidden="true" />,
-    section: "feedback",
-  },
-  {
-    value: "monitor",
-    label: "监测设置",
-    icon: <Gauge size={20} aria-hidden="true" />,
-    section: "feedback",
-  },
-  {
-    value: "quotes",
-    label: "语录设置",
-    icon: <MessageSquareText size={20} aria-hidden="true" />,
-    section: "layout",
-  },
-  {
-    value: "about",
-    label: "关于",
-    icon: <Info size={20} aria-hidden="true" />,
-    section: "preview",
-  },
-];
-
-function getSectionForCategory(category: SettingsCategory): TopSection {
-  return categoryItems.find((item) => item.value === category)?.section ?? "controls";
-}
-
+/**
+ * 设置面板主组件
+ * 提供各功能分区的设置界面
+ */
 export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   const { study } = useAppState();
   const dispatch = useAppDispatch();
 
-  const [activeSection, setActiveSection] = useState<TopSection>("controls");
-  const [activeCategory, setActiveCategory] = useState<SettingsCategory>("basic");
+  const [activeCategory, setActiveCategory] = useState<
+    "basic" | "weather" | "monitor" | "quotes" | "about"
+  >("basic");
   const [targetYear, setTargetYear] = useState(study.targetYear);
-
+  // 分区保存注册
   const basicSaveRef = useRef<() => void>(() => {});
   const weatherSaveRef = useRef<() => void>(() => {});
   const monitorSaveRef = useRef<() => void>(() => {});
   const quotesSaveRef = useRef<() => void>(() => {});
   const aboutSaveRef = useRef<() => void>(() => {});
-  const contentRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * 统一关闭处理：广播面板关闭事件
+   */
   const handleClose = useCallback(() => {
     try {
       broadcastSettingsEvent(SETTINGS_EVENTS.SettingsPanelClosed);
@@ -128,159 +56,131 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     }
   }, [onClose]);
 
+  /** 保存所有设置 */
   const handleSaveAll = useCallback(() => {
+    // 目标年份持久化（基础设置中会调整，但此处统一写入）
     dispatch({ type: "SET_TARGET_YEAR", payload: targetYear });
-
     try {
       basicSaveRef.current?.();
       weatherSaveRef.current?.();
       monitorSaveRef.current?.();
       quotesSaveRef.current?.();
       aboutSaveRef.current?.();
-    } catch (error) {
-      logger.error("保存分区设置失败:", error);
+    } catch (e) {
+      logger.error("保存分区设置失败:", e);
       alert("保存设置时出现错误，请重试");
       return;
     }
-
+    // 广播：保存完成事件（包含关键摘要）
     broadcastSettingsEvent(SETTINGS_EVENTS.SettingsSaved, { targetYear });
     handleClose();
   }, [targetYear, dispatch, handleClose]);
 
+  // 打开时默认分区与数据
   useEffect(() => {
     if (isOpen) {
       setTargetYear(study.targetYear);
-      setActiveSection("controls");
       setActiveCategory("basic");
     }
   }, [isOpen, study.targetYear]);
 
+  // 切换分区时滚动到顶部
   useEffect(() => {
     if (!isOpen) return;
-    contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    const bodyEl = containerRef.current?.closest(`.${modalStyles.modalBody}`) as HTMLElement | null;
+    if (bodyEl) bodyEl.scrollTo({ top: 0, behavior: "smooth" });
   }, [activeCategory, isOpen]);
 
   if (!isOpen) return null;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="设置"
-      fullScreen
-      hideHeader
-      className={styles.settingsModal}
-    >
-      <div id="settings-panel-container" className={styles.settingsApp}>
-        <header className={styles.topNav}>
-          <nav className={styles.topNavList} aria-label="设置主分组">
-            {topSections.map((section) => {
-              const active = section.value === activeSection;
-              return (
-                <button
-                  key={section.value}
-                  className={active ? styles.topNavItemActive : styles.topNavItem}
-                  type="button"
-                  aria-label={section.label}
-                  aria-current={active ? "page" : undefined}
-                  title={section.label}
-                  onClick={() => {
-                    setActiveSection(section.value);
-                    setActiveCategory(section.defaultCategory);
-                  }}
-                >
-                  {section.icon}
-                  <span>{section.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </header>
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="设置"
+        maxWidth="lg"
+        headerDivider={false}
+        compactBodyTop
+        footer={
+          <FormButtonGroup align="right">
+            <FormButton id="settings-close-btn" variant="secondary" onClick={handleClose}>
+              取消
+            </FormButton>
+            <FormButton id="settings-save-btn" variant="primary" onClick={handleSaveAll}>
+              保存
+            </FormButton>
+          </FormButtonGroup>
+        }
+      >
+        <div id="settings-panel-container" ref={containerRef} className={styles.settingsContainer}>
+          {/* 顶部分类选项卡 */}
+          <Tabs
+            items={[
+              { key: "basic", label: "基础设置" },
+              { key: "weather", label: "天气设置" },
+              { key: "monitor", label: "监测设置" },
+              { key: "quotes", label: "语录设置" },
+              { key: "about", label: "关于" },
+            ]}
+            activeKey={activeCategory}
+            onChange={(key) =>
+              setActiveCategory(key as "basic" | "weather" | "monitor" | "quotes" | "about")
+            }
+            variant="announcement"
+            size="md"
+            scrollable
+            sticky
+          />
 
-        <div className={styles.settingsWorkspace}>
-          <aside className={styles.sideNav} aria-label="设置分区">
-            {categoryItems.map((item) => {
-              const active = item.value === activeCategory;
-              return (
-                <button
-                  key={item.value}
-                  className={active ? styles.sideNavItemActive : styles.sideNavItem}
-                  type="button"
-                  aria-label={item.label}
-                  aria-current={active ? "page" : undefined}
-                  title={item.label}
-                  onClick={() => {
-                    setActiveCategory(item.value);
-                    setActiveSection(getSectionForCategory(item.value));
-                  }}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </aside>
+          {/* 基础设置 */}
+          {activeCategory === "basic" && (
+            <BasicSettingsPanel
+              targetYear={targetYear}
+              onTargetYearChange={setTargetYear}
+              onRegisterSave={(fn) => {
+                basicSaveRef.current = fn;
+              }}
+            />
+          )}
 
-          <main className={styles.contentPane}>
-            <div className={styles.contentHeader}>
-              <h2>设置</h2>
-            </div>
+          {/* 天气设置 */}
+          {activeCategory === "weather" && (
+            <WeatherSettingsPanel
+              onRegisterSave={(fn) => {
+                weatherSaveRef.current = fn;
+              }}
+            />
+          )}
 
-            <div ref={contentRef} className={styles.contentBody}>
-              {activeCategory === "basic" && (
-                <BasicSettingsPanel
-                  targetYear={targetYear}
-                  onTargetYearChange={setTargetYear}
-                  onRegisterSave={(fn) => {
-                    basicSaveRef.current = fn;
-                  }}
-                />
-              )}
+          {/* 监测设置（噪音相关） */}
+          {activeCategory === "monitor" && (
+            <StudySettingsPanel
+              onRegisterSave={(fn) => {
+                monitorSaveRef.current = fn;
+              }}
+            />
+          )}
 
-              {activeCategory === "weather" && (
-                <WeatherSettingsPanel
-                  onRegisterSave={(fn) => {
-                    weatherSaveRef.current = fn;
-                  }}
-                />
-              )}
+          {/* 语录设置 */}
+          {activeCategory === "quotes" && (
+            <ContentSettingsPanel
+              onRegisterSave={(fn) => {
+                quotesSaveRef.current = fn;
+              }}
+            />
+          )}
 
-              {activeCategory === "monitor" && (
-                <StudySettingsPanel
-                  onRegisterSave={(fn) => {
-                    monitorSaveRef.current = fn;
-                  }}
-                />
-              )}
-
-              {activeCategory === "quotes" && (
-                <ContentSettingsPanel
-                  onRegisterSave={(fn) => {
-                    quotesSaveRef.current = fn;
-                  }}
-                />
-              )}
-
-              {activeCategory === "about" && (
-                <AboutSettingsPanel
-                  onRegisterSave={(fn) => {
-                    aboutSaveRef.current = fn;
-                  }}
-                />
-              )}
-            </div>
-
-            <footer className={styles.actionBar}>
-              <Button id="settings-close-btn" variant="secondary" onClick={handleClose}>
-                取消
-              </Button>
-              <Button id="settings-save-btn" variant="primary" onClick={handleSaveAll}>
-                保存
-              </Button>
-            </footer>
-          </main>
+          {/* 关于 */}
+          {activeCategory === "about" && (
+            <AboutSettingsPanel
+              onRegisterSave={(fn) => {
+                aboutSaveRef.current = fn;
+              }}
+            />
+          )}
         </div>
-      </div>
-    </Modal>
+      </Modal>
+    </>
   );
 }

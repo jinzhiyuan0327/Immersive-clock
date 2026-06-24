@@ -5,50 +5,40 @@ import { classNames } from "../utils/classNames";
 import styles from "./primitives.module.css";
 
 export interface TabItem<TValue extends string = string> {
-  value?: TValue;
-  key?: TValue;
+  value: TValue;
   label: string;
   icon?: ReactNode;
   disabled?: boolean;
 }
 
 export interface TabsProps<TValue extends string = string> {
-  value?: TValue;
-  activeKey?: TValue;
+  value: TValue;
   items: Array<TabItem<TValue>>;
   onChange: (value: TValue) => void;
-  label?: string;
-  variant?: "underlined" | "pill" | "browser" | "announcement";
-  size?: "sm" | "md" | "lg";
-  scrollable?: boolean;
-  sticky?: boolean;
+  label: string;
   className?: string;
 }
 
 export function Tabs<TValue extends string = string>({
   value,
-  activeKey,
   items,
   onChange,
-  label = "选项卡",
+  label,
   className,
 }: TabsProps<TValue>) {
-  const resolvedValue = value ?? activeKey;
-
   return (
     <div className={classNames(styles.tabs, className)} role="tablist" aria-label={label}>
       {items.map((item) => {
-        const itemValue = (item.value ?? item.key) as TValue;
-        const active = itemValue === resolvedValue;
+        const active = item.value === value;
         return (
           <button
-            key={itemValue}
+            key={item.value}
             className={classNames(styles.tabButton, active && styles.tabButtonActive)}
             type="button"
             role="tab"
             aria-selected={active}
             disabled={item.disabled}
-            onClick={() => onChange(itemValue)}
+            onClick={() => onChange(item.value)}
           >
             {item.icon}
             <span>{item.label}</span>

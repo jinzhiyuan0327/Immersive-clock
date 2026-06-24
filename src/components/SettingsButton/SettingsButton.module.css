@@ -1,38 +1,44 @@
+/* 设置按钮样式 */
 .settingsButton {
-  align-items: center;
-  background: rgba(17, 19, 23, 0.88);
-  border: 1px solid rgba(47, 236, 198, 0.28);
-  border-radius: 8px;
-  bottom: 18px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
-  color: #2fecc6;
-  cursor: pointer;
-  display: flex;
-  height: 38px;
-  justify-content: center;
-  left: 18px;
   position: fixed;
-  transition:
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease,
-    opacity 0.18s ease,
-    transform 0.18s ease;
-  width: 38px;
+  bottom: 1rem;
+  left: 1rem;
   z-index: 999;
+
+  /* 按钮样式 - 去除边框和背景 */
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+
+  /* 内容居中 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 颜色和字体 */
+  color: var(--text-color);
+  cursor: pointer;
+
+  /* 过渡动画 */
+  transition: all 0.3s ease;
+
+  /* 去除阴影和毛玻璃效果 */
+  box-shadow: none;
 }
 
 .settingsButton:hover {
-  background: rgba(47, 236, 198, 0.14);
-  border-color: rgba(47, 236, 198, 0.58);
-  opacity: 1;
-  transform: translateY(-1px);
+  background: transparent;
+  transform: scale(1.1);
+  opacity: 0.8;
 }
 
 .settingsButton:active {
-  transform: translateY(0);
+  transform: scale(0.95);
 }
 
+/* 显示/隐藏状态 */
 .visible {
   opacity: 1;
   pointer-events: auto;
@@ -43,39 +49,56 @@
   pointer-events: none;
 }
 
+/* 透明度状态 */
 .normal {
-  opacity: 0.88;
+  opacity: 0.6;
 }
 
 .faded {
-  opacity: 0.42;
+  opacity: 0.2;
 }
 
+/* 响应式设计 */
 @media (max-width: 768px) {
   .settingsButton {
-    bottom: 14px;
-    height: 36px;
-    left: 14px;
-    width: 36px;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    width: 28px;
+    height: 28px;
   }
 }
 
 @media (max-width: 480px) {
   .settingsButton {
-    bottom: 12px;
-    height: 34px;
-    left: 12px;
-    width: 34px;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    width: 24px;
+    height: 24px;
   }
 }
 
+/* 减少动画偏好支持 */
 @media (prefers-reduced-motion: reduce) {
   .settingsButton {
     transition: none;
   }
 
-  .settingsButton:hover,
+  .settingsButton:hover {
+    transform: none;
+  }
+
   .settingsButton:active {
     transform: none;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .settingsButton {
+    color: var(--text-color);
+  }
+
+  .settingsButton:hover {
+    background: transparent;
   }
 }

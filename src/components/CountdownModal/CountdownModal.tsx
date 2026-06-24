@@ -1,9 +1,10 @@
-import { Minus as MinusIcon, Plus as PlusIcon } from "lucide-react";
 import React, { useState, useCallback, useEffect } from "react";
 
-import { useAppDispatch, useAppState } from "../../contexts/AppContext";
-import { Button as FormButton, FormSection, Inline as FormButtonGroup, Modal } from "../../ui";
+import { useAppState, useAppDispatch } from "../../contexts/AppContext";
 import { timeToSeconds } from "../../utils/formatTime";
+import { FormSection, FormButton, FormButtonGroup } from "../FormComponents";
+import { PlusIcon, MinusIcon } from "../Icons";
+import { Modal } from "../Modal";
 
 import styles from "./CountdownModal.module.css";
 

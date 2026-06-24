@@ -11,15 +11,7 @@ export interface ListItemProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   trailing?: ReactNode;
 }
 
-export function ListItem({
-  title,
-  description,
-  icon,
-  trailing,
-  className,
-  type = "button",
-  ...props
-}: ListItemProps) {
+export function ListItem({ title, description, icon, trailing, className, type = "button", ...props }: ListItemProps) {
   return (
     <button
       className={classNames(styles.listItem, styles.listItemClickable, className)}
@@ -34,4 +26,8 @@ export function ListItem({
       {trailing}
     </button>
   );
+}
+
+export function List({ children }: { children: ReactNode }) {
+  return <div className={styles.list}>{children}</div>;
 }

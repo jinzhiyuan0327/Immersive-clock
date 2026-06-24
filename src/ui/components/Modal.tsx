@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 
 import { classNames } from "../utils/classNames";
 
+import { Button } from "./Button";
 import styles from "./primitives.module.css";
 
 export interface ModalProps {
@@ -13,15 +14,7 @@ export interface ModalProps {
   children: ReactNode;
   onClose: () => void;
   footer?: ReactNode;
-  width?: "sm" | "md" | "lg" | "xl" | "xxl";
-  maxWidth?: "sm" | "md" | "lg" | "xl" | "xxl";
-  showCloseButton?: boolean;
-  closeOnBackdrop?: boolean;
-  headerDivider?: boolean;
-  hideHeader?: boolean;
-  fullScreen?: boolean;
-  compactBodyTop?: boolean;
-  closeButtonDataTour?: string;
+  width?: "sm" | "md" | "lg";
   className?: string;
 }
 
@@ -29,8 +22,6 @@ const widthMap: Record<NonNullable<ModalProps["width"]>, string> = {
   sm: "420px",
   md: "560px",
   lg: "720px",
-  xl: "880px",
-  xxl: "1040px",
 };
 
 export function Modal({
@@ -40,14 +31,6 @@ export function Modal({
   onClose,
   footer,
   width = "md",
-  maxWidth,
-  showCloseButton = true,
-  closeOnBackdrop = false,
-  headerDivider = true,
-  hideHeader = false,
-  fullScreen = false,
-  compactBodyTop = false,
-  closeButtonDataTour,
   className,
 }: ModalProps) {
   useEffect(() => {
@@ -65,53 +48,43 @@ export function Modal({
 
   if (!isOpen) return null;
 
-  const resolvedWidth = maxWidth ?? width;
-
   return createPortal(
-    <div
-      className={classNames(styles.modalBackdrop, fullScreen && styles.modalBackdropFullscreen)}
-      role="presentation"
-      onMouseDown={() => {
-        if (closeOnBackdrop) {
-          onClose();
-        }
-      }}
-    >
+    <div className={styles.modalBackdrop} role="presentation" onMouseDown={onClose}>
       <section
-        className={classNames(styles.modalPanel, fullScreen && styles.modalPanelFullscreen, className)}
+        className={classNames(styles.modalPanel, className)}
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        style={fullScreen ? undefined : { width: `min(100%, ${widthMap[resolvedWidth]})` }}
+        style={{ width: `min(100%, ${widthMap[width]})` }}
         onMouseDown={(event) => event.stopPropagation()}
       >
-        {!hideHeader && (
-          <header
-            className={classNames(styles.modalHeader, !headerDivider && styles.modalHeaderFlat)}
-          >
-            <h2 className={styles.modalTitle}>{title}</h2>
-            {showCloseButton && (
-              <button
-                className={styles.closeButton}
-                type="button"
-                aria-label="关闭"
-                data-tour={closeButtonDataTour}
-                onClick={onClose}
-              >
-                <X size={18} aria-hidden="true" />
-              </button>
-            )}
-          </header>
-        )}
-        <div
-          className={classNames(styles.modalBody, compactBodyTop && styles.modalBodyCompactTop)}
-          data-ui-modal-body
-        >
-          {children}
-        </div>
+        <header className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>{title}</h2>
+          <button className={styles.closeButton} type="button" aria-label="关闭" onClick={onClose}>
+            <X size={18} aria-hidden="true" />
+          </button>
+        </header>
+        <div className={styles.modalBody}>{children}</div>
         {footer && <footer className={styles.modalFooter}>{footer}</footer>}
       </section>
     </div>,
-    document.body,
+    document.body
+  );
+}
+
+export function ModalActions({ children }: { children: ReactNode }) {
+  return <div className={styles.settingsFooter}>{children}</div>;
+}
+
+export function ConfirmActions({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
+  return (
+    <>
+      <Button variant="secondary" onClick={onCancel}>
+        取消
+      </Button>
+      <Button variant="primary" onClick={onConfirm}>
+        确认
+      </Button>
+    </>
   );
 }
