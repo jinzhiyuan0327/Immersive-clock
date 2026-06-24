@@ -1,7 +1,4 @@
 <div align="center">
-<img src="public/assets/readme-hero.png" width="100%" alt="Immersive Clock preview" />
-<br />
-<br />
 <img src="public/favicon.svg" width="160" height="160" alt="Immersive Clock Logo" />
 <h1>沉浸式时钟 | Immersive Clock ⏰</h1>
 
