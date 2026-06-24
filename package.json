@@ -19,7 +19,7 @@
     "dev:electron": "vite --mode electron",
     "build": "vite build && node scripts/postbuild.mjs",
     "build:electron": "node --input-type=module -e \"import fs from 'fs'; fs.rmSync('dist-electron',{ recursive:true, force:true });\" && vite build --mode electron && node scripts/postbuild-electron.mjs",
-    "dist:electron": "npm run build:electron && npm run pack:electron",
+    "dist:electron": "cnpm run build:electron && cnpm run pack:electron",
     "pack:electron": "electron-builder",
     "preview": "vite preview",
     "lint": "eslint src --ext .ts,.tsx",
@@ -34,7 +34,6 @@
   "dependencies": {
     "@microsoft/clarity": "^1.0.2",
     "driver.js": "^1.4.0",
-    "lucide-react": "^1.21.0",
     "marked": "^18.0.2",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

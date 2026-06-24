@@ -6,30 +6,31 @@
 ## 环境要求
 
 - Node.js `>=20.19.0`。
-- 项目脚本以 `npm` 为主要入口。
+- 项目脚本以 `cnpm` 为主要入口；如果本地没有 `cnpm`，需要先按团队习惯安装或确认是否可
+  使用等价的 npm 命令。
 - 依赖锁文件为 `package-lock.json`，不要混入其他包管理器锁文件。
 
 ## 常用命令
 
 ```bash
-npm run dev
-npm run dev:electron
-npm run build
-npm run build:electron
-npm run dist:electron
-npm run preview
-npm run lint
-npm run lint:fix
-npm run format
-npm run test
-npm run test:coverage
-npm run test:e2e
+cnpm run dev
+cnpm run dev:electron
+cnpm run build
+cnpm run build:electron
+cnpm run dist:electron
+cnpm run preview
+cnpm run lint
+cnpm run lint:fix
+cnpm run format
+cnpm run test
+cnpm run test:coverage
+cnpm run test:e2e
 ```
 
 常用选择：
 
-- Web 开发使用 `npm run dev`。
-- Electron 开发使用 `npm run dev:electron`。
+- Web 开发使用 `cnpm run dev`。
+- Electron 开发使用 `cnpm run dev:electron`。
 - 只改文档时通常不需要运行构建或测试，可用链接检查和 `git diff --check` 做轻量验证。
 - 改 TypeScript/React 代码时至少运行相关 Vitest 或 ESLint。
 - 改关键用户流程时补充或运行 Playwright E2E。

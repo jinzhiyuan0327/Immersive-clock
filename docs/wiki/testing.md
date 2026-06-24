@@ -6,14 +6,14 @@
 ## 测试入口
 
 ```bash
-npm run test
-npm run test:coverage
-npm run test:e2e
+cnpm run test
+cnpm run test:coverage
+cnpm run test:e2e
 ```
 
-- `npm run test`：运行 Vitest。
-- `npm run test:coverage`：运行 Vitest 并输出覆盖率。
-- `npm run test:e2e`：运行 Playwright E2E，执行前会调用 `scripts/ensure-playwright.mjs`。
+- `cnpm run test`：运行 Vitest。
+- `cnpm run test:coverage`：运行 Vitest 并输出覆盖率。
+- `cnpm run test:e2e`：运行 Playwright E2E，执行前会调用 `scripts/ensure-playwright.mjs`。
 
 Playwright 默认使用系统 Edge 项目。若需要 Playwright 自带浏览器，可设置
 `PW_BUNDLED_BROWSERS=1` 后再运行 E2E。

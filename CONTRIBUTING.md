@@ -33,7 +33,7 @@
 
 - Node.js：`>= 18.0.0`（以 [package.json](./package.json) 的 `engines.node` 为准）
 - Git：用于版本控制
-- 包管理器：示例命令统一使用 `npm`
+- 包管理器：示例命令统一使用 `cnpm`（你也可以使用 npm/pnpm/yarn，但请在 PR 中保持文档示例一致）
 
 ### 拉取代码
 
@@ -66,13 +66,13 @@ cp .env.example .env
 ### 安装依赖
 
 ```bash
-npm install
+cnpm install
 ```
 
 ### 启动 Web 开发服务器
 
 ```bash
-npm run dev
+cnpm run dev
 ```
 
 默认开发端口为 `3005`（如需修改请以项目配置为准）。
@@ -80,7 +80,7 @@ npm run dev
 ### 启动 Electron 开发环境
 
 ```bash
-npm run dev:electron
+cnpm run dev:electron
 ```
 
 ---
@@ -91,21 +91,21 @@ npm run dev:electron
 
 ```bash
 # Web 端构建 / 预览
-npm run build
-npm run preview
+cnpm run build
+cnpm run preview
 
 # 代码检查与格式化
-npm run lint
-npm run lint:fix
-npm run format
+cnpm run lint
+cnpm run lint:fix
+cnpm run format
 
 # 单元测试 (Vitest)
-npm run test
-npm run test:coverage
+cnpm run test
+cnpm run test:coverage
 
 # E2E 测试 (Playwright)
-npm run test:e2e:install
-npm run test:e2e
+cnpm run test:e2e:install
+cnpm run test:e2e
 ```
 
 ---
@@ -178,14 +178,14 @@ npm run test:e2e
 - 提交 PR 前建议至少执行：
 
 ```bash
-npm run lint
-npm run test
+cnpm run lint
+cnpm run test
 ```
 
 如涉及页面交互或重大 UI 改动，建议追加：
 
 ```bash
-npm run test:e2e
+cnpm run test:e2e
 ```
 
 ---
@@ -195,7 +195,7 @@ npm run test:e2e
 项目提供 Electron 构建脚本：
 
 ```bash
-npm run dist:electron
+cnpm run dist:electron
 ```
 
 说明：

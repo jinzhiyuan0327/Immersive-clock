@@ -65,12 +65,12 @@ Electron 构建输出分为 Web 渲染产物和 `dist-electron/` 主进程产物
 
 ## 构建模式
 
-- 普通开发：`npm run dev`，启动 Vite Web dev server。
-- Electron 开发：`npm run dev:electron`，使用 Electron 模式启动 Vite。
-- Web 构建：`npm run build`，输出 `dist/` 并执行 postbuild 脚本。
-- Electron 构建：`npm run build:electron`，清理并重建 `dist-electron/`，再执行
+- 普通开发：`cnpm run dev`，启动 Vite Web dev server。
+- Electron 开发：`cnpm run dev:electron`，使用 Electron 模式启动 Vite。
+- Web 构建：`cnpm run build`，输出 `dist/` 并执行 postbuild 脚本。
+- Electron 构建：`cnpm run build:electron`，清理并重建 `dist-electron/`，再执行
   Electron postbuild 脚本。
-- Electron 打包：`npm run dist:electron`，先构建再调用 `electron-builder`。
+- Electron 打包：`cnpm run dist:electron`，先构建再调用 `electron-builder`。
 
 ## 设计约束
 

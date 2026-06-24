@@ -31,7 +31,7 @@ Thanks for your interest in contributing to Immersive Clock. This document is fo
 
 - Node.js: `>= 18.0.0` (see `engines.node` in [package.json](./package.json))
 - Git
-- Package manager: examples use `npm`
+- Package manager: examples use `cnpm` to keep docs consistent (npm/pnpm/yarn are also acceptable)
 
 ---
 
@@ -54,19 +54,19 @@ copy .env.example .env
 Install deps:
 
 ```bash
-npm install
+cnpm install
 ```
 
 Start web dev server:
 
 ```bash
-npm run dev
+cnpm run dev
 ```
 
 Start Electron dev:
 
 ```bash
-npm run dev:electron
+cnpm run dev:electron
 ```
 
 ---
@@ -76,18 +76,18 @@ npm run dev:electron
 All scripts are defined in [package.json](./package.json):
 
 ```bash
-npm run build
-npm run preview
+cnpm run build
+cnpm run preview
 
-npm run lint
-npm run lint:fix
-npm run format
+cnpm run lint
+cnpm run lint:fix
+cnpm run format
 
-npm run test
-npm run test:coverage
+cnpm run test
+cnpm run test:coverage
 
-npm run test:e2e:install
-npm run test:e2e
+cnpm run test:e2e:install
+cnpm run test:e2e
 ```
 
 ---
@@ -140,14 +140,14 @@ PR description should include:
 Recommended minimum before a PR:
 
 ```bash
-npm run lint
-npm run test
+cnpm run lint
+cnpm run test
 ```
 
 If your change affects core flows or UI interactions, also run:
 
 ```bash
-npm run test:e2e
+cnpm run test:e2e
 ```
 
 ---
@@ -157,7 +157,7 @@ npm run test:e2e
 Build installers:
 
 ```bash
-npm run dist:electron
+cnpm run dist:electron
 ```
 
 This runs an Electron-mode build and packages artifacts via `electron-builder`. Output paths and platform differences depend on the project configuration.

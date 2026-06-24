@@ -5,7 +5,6 @@ import styles from "./App.module.css";
 import AnnouncementModal from "./components/AnnouncementModal";
 import { Confetti } from "./components/Confetti/Confetti";
 import { ClockPage } from "./pages/ClockPage/ClockPage";
-import { DesignSystemPage } from "./pages/DesignSystem";
 import { shouldShowAnnouncement } from "./utils/announcementStorage";
 import { hasSeenTour } from "./utils/tour";
 
@@ -79,7 +78,6 @@ export function App() {
     <div className={`${styles.app} ${showEnterAnimation ? styles.enterAnimation : ""}`}>
       <Routes>
         <Route path="/" element={<ClockPage />} />
-        <Route path="/design-system" element={<DesignSystemPage />} />
         <Route path="*" element={<ClockPage />} />
       </Routes>
 
