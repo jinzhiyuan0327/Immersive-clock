@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { ExamItem } from '../types';
 import { getAppSettings, updateExamSettings } from '../utils/appSettings';
 import { buildPresetExams } from '../data/presetExams';
-import { saveExamsToServer, fetchExamsFromServer } from '../services/examService';
+import { saveExamsToServer, fetchExamsFromServer, loginAdmin, isLoginRequired, hasValidLocalToken, logoutAdmin } from '../services/examService';
 import { nowMs, parseZonedTime, formatDateTimeInZone } from '../utils/timeSource';
 
 function genId() { return `exam_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`; }
@@ -49,16 +49,42 @@ export default function AdminPage() {
   const [showImport, setShowImport] = useState(false);
   const [importError, setImportError] = useState('');
 
-  // 登录限权：如果设置了 VITE_ADMIN_SECRET 则进入前需输密码
-  const ADMIN_SECRET = (import.meta as any).env?.VITE_ADMIN_SECRET as string | undefined;
-  const [authed, setAuthed] = useState(() => !ADMIN_SECRET);
+  // 登录限权：密码校验完全在服务端完成，前端只持有登录后签发的临时 token
+  const [authed, setAuthed] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
   const [pwInput, setPwInput] = useState('');
   const [pwError, setPwError] = useState('');
+  const [pwSubmitting, setPwSubmitting] = useState(false);
 
-  function handleLogin(e: React.FormEvent) {
+  // 初始化时检查：本地是否已有有效登录态，或后台其实不需要密码
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (hasValidLocalToken()) { if (!cancelled) { setAuthed(true); setAuthChecking(false); } return; }
+      const required = await isLoginRequired();
+      if (cancelled) return;
+      if (!required) setAuthed(true);
+      setAuthChecking(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (pwInput === ADMIN_SECRET) { setAuthed(true); setPwError(''); }
+    setPwSubmitting(true);
+    const ok = await loginAdmin(pwInput);
+    setPwSubmitting(false);
+    if (ok) { setAuthed(true); setPwError(''); setPwInput(''); }
     else { setPwError('密码错误，请重试'); setPwInput(''); }
+  }
+
+  async function handleLogout() {
+    logoutAdmin();
+    setAuthed(false);
+    setAuthChecking(true);
+    const required = await isLoginRequired();
+    if (!required) setAuthed(true);
+    setAuthChecking(false);
   }
 
   // 同步 itemsRef，供保存/标题推送时读取最新列表
@@ -187,7 +213,16 @@ export default function AdminPage() {
     a.download = `exams_${new Date().toISOString().slice(0, 10)}.json`; a.click();
   }
 
-  // 未登录时显示密码锁屏
+  // 正在检查登录态：短暂显示占位，避免先闪一下锁屏再消失
+  if (authChecking) {
+    return (
+      <div style={ { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0f0f', color: '#666', fontSize: '14px' } }>
+        加载中…
+      </div>
+    );
+  }
+
+  // 未登录时显示密码锁屏（密码只发给服务端校验一次，前端不保存明文密码）
   if (!authed) {
     return (
       <div style={ { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0f0f' } }>
@@ -204,7 +239,7 @@ export default function AdminPage() {
             style={ { padding: '10px 14px', borderRadius: '8px', border: pwError ? '1px solid #e74c3c' : '1px solid #333', background: '#111', color: '#e0e0e0', fontSize: '15px', outline: 'none' } }
           />
           {pwError && <p style={ { color: '#e74c3c', fontSize: '13px', margin: 0, textAlign: 'center' } }>{pwError}</p>}
-          <button type="submit" style={ { padding: '10px', borderRadius: '8px', background: '#3498db', color: '#fff', border: 'none', fontSize: '15px', fontWeight: 600, cursor: 'pointer' } }>进入管理</button>
+          <button type="submit" disabled={pwSubmitting} style={ { padding: '10px', borderRadius: '8px', background: '#3498db', color: '#fff', border: 'none', fontSize: '15px', fontWeight: 600, cursor: pwSubmitting ? 'default' : 'pointer', opacity: pwSubmitting ? 0.7 : 1 } }>{pwSubmitting ? '验证中…' : '进入管理'}</button>
           <button type="button" onClick={() => navigate('/exam')} style={ { padding: '8px', borderRadius: '8px', background: 'transparent', color: '#666', border: '1px solid #333', fontSize: '13px', cursor: 'pointer' } }>返回考试界面</button>
         </form>
       </div>
@@ -226,6 +261,7 @@ export default function AdminPage() {
           <button className="admin-btn admin-btn--ghost" onClick={() => setShowImport(v => !v)}>导入 JSON</button>
           <button className="admin-btn admin-btn--ghost" onClick={handleExport}>导出 JSON</button>
           {items.length > 0 && <button className="admin-btn admin-btn--danger" onClick={() => { if (window.confirm('确定清空所有分考试？')) saveItems([]); }}>清空全部</button>}
+          <button className="admin-btn admin-btn--ghost" onClick={handleLogout}>退出登录</button>
         </div>
       </header>
       <div className="admin-body">

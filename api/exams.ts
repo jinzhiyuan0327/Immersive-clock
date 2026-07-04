@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
+import { verifyToken } from './_auth';
 
 /**
  * GET  /api/exams  -> { ok, items, title, updatedAt }
@@ -68,13 +69,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'POST') {
-      // 可选写入鉴权：设置 ADMIN_SECRET 后，POST 需带 Authorization: Bearer <secret>
+      // 可选写入鉴权：设置 ADMIN_SECRET 后，POST 需带 Authorization: Bearer <登录时签发的 token>
+      // 注意：这里校验的是签名 token，不是明文密码——明文密码只在 /api/login 里比对一次，
+      // 不会通过这个接口往返，避免密码被前端代码或网络中间人获取。
       const secret = process.env.ADMIN_SECRET;
       if (secret) {
         const auth = String(req.headers['authorization'] || '');
         const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-        if (token !== secret) {
-          res.status(401).json({ ok: false, error: '\u5bc6\u7801\u9519\u8bef' });
+        if (!verifyToken(token, secret)) {
+          res.status(401).json({ ok: false, error: '\u767b\u5f55\u5df2\u8fc7\u671f\u6216\u65e0\u6548\uff0c\u8bf7\u91cd\u65b0\u767b\u5f55' });
           return;
         }
       }
