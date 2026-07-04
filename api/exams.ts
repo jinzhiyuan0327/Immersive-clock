@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
-import { verifyToken } from './_auth';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 /**
  * GET  /api/exams  -> { ok, items, title, updatedAt }
@@ -11,6 +11,36 @@ import { verifyToken } from './_auth';
  */
 
 const sql = neon(process.env.DATABASE_URL || '');
+
+function base64urlDecode(input: string): string {
+  const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized + '='.repeat((4 - (normalized.length % 4 || 4)) % 4);
+  return Buffer.from(padded, 'base64').toString('utf8');
+}
+
+function verifyToken(token: string | undefined | null, secret: string): boolean {
+  if (!token || !secret) return false;
+
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+
+  const [payload, sig] = parts;
+  if (!payload || !sig || !/^[0-9a-f]+$/i.test(sig)) return false;
+
+  const expected = createHmac('sha256', secret).update(payload).digest('hex');
+  const a = Buffer.from(sig, 'hex');
+  const b = Buffer.from(expected, 'hex');
+
+  if (a.length !== b.length) return false;
+  if (!timingSafeEqual(a, b)) return false;
+
+  try {
+    const parsed = JSON.parse(base64urlDecode(payload)) as { exp?: unknown };
+    return typeof parsed.exp === 'number' && Date.now() < parsed.exp;
+  } catch {
+    return false;
+  }
+}
 
 let tableReady = false;
 async function ensureTable() {
