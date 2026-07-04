@@ -49,6 +49,18 @@ export default function AdminPage() {
   const [showImport, setShowImport] = useState(false);
   const [importError, setImportError] = useState('');
 
+  // 登录限权：如果设置了 VITE_ADMIN_SECRET 则进入前需输密码
+  const ADMIN_SECRET = (import.meta as any).env?.VITE_ADMIN_SECRET as string | undefined;
+  const [authed, setAuthed] = useState(() => !ADMIN_SECRET);
+  const [pwInput, setPwInput] = useState('');
+  const [pwError, setPwError] = useState('');
+
+  function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    if (pwInput === ADMIN_SECRET) { setAuthed(true); setPwError(''); }
+    else { setPwError('密码错误，请重试'); setPwInput(''); }
+  }
+
   // 同步 itemsRef，供保存/标题推送时读取最新列表
   useEffect(() => { itemsRef.current = items; }, [items]);
 
@@ -175,6 +187,30 @@ export default function AdminPage() {
     a.download = `exams_${new Date().toISOString().slice(0, 10)}.json`; a.click();
   }
 
+  // 未登录时显示密码锁屏
+  if (!authed) {
+    return (
+      <div style={ { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0f0f' } }>
+        <form onSubmit={handleLogin} style={ { background: '#1a1a1a', border: '1px solid #333', borderRadius: '12px', padding: '40px 36px', width: '320px', display: 'flex', flexDirection: 'column', gap: '16px' } }>
+          <div style={ { textAlign: 'center', fontSize: '28px', marginBottom: '4px' } }>🔒</div>
+          <h2 style={ { textAlign: 'center', color: '#e0e0e0', fontSize: '17px', fontWeight: 600, margin: 0 } }>考试管理后台</h2>
+          <p style={ { textAlign: 'center', color: '#666', fontSize: '13px', margin: 0 } }>请输入管理密码以继续</p>
+          <input
+            type="password"
+            autoFocus
+            placeholder="密码"
+            value={pwInput}
+            onChange={e => { setPwInput(e.target.value); setPwError(''); }}
+            style={ { padding: '10px 14px', borderRadius: '8px', border: pwError ? '1px solid #e74c3c' : '1px solid #333', background: '#111', color: '#e0e0e0', fontSize: '15px', outline: 'none' } }
+          />
+          {pwError && <p style={ { color: '#e74c3c', fontSize: '13px', margin: 0, textAlign: 'center' } }>{pwError}</p>}
+          <button type="submit" style={ { padding: '10px', borderRadius: '8px', background: '#3498db', color: '#fff', border: 'none', fontSize: '15px', fontWeight: 600, cursor: 'pointer' } }>进入管理</button>
+          <button type="button" onClick={() => navigate('/exam')} style={ { padding: '8px', borderRadius: '8px', background: 'transparent', color: '#666', border: '1px solid #333', fontSize: '13px', cursor: 'pointer' } }>返回考试界面</button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-page">
       <header className="admin-header">
@@ -295,7 +331,7 @@ export default function AdminPage() {
         <div className="admin-modal-overlay" onClick={() => setDeleteConfirm(null)}>
           <div className="admin-modal" onClick={e => e.stopPropagation()}>
             <h3 className="admin-modal__title">确认删除</h3>
-            <p className="admin-modal__body">确定要删除「<strong>{items.find(i => i.id === deleteConfirm)?.name}</strong>」吗？此操作无法撤销。</p>
+            <p className="admin-modal__body">确定要删除「<strong>{items.find(i => i.id === deleteConfirm)?.name}</strong>��吗？此操作无法撤销。</p>
             <div className="admin-modal__actions">
               <button className="admin-btn admin-btn--danger" onClick={() => { saveItems(items.filter(it => it.id !== deleteConfirm)); if (editId === deleteConfirm) cancelEdit(); setDeleteConfirm(null); }}>确认删除</button>
               <button className="admin-btn" onClick={() => setDeleteConfirm(null)}>取消</button>
