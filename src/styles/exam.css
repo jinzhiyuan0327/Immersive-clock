@@ -78,17 +78,18 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 时钟(主角:大幅放大) */
+/* 时钟(主角:大幅放大，优化可读性) */
 .exam-clock {
-  font-family: var(--font-mono, "JetBrains Mono", ui-monospace, monospace);
-  font-size: clamp(5rem, 17vw, 13rem);
-  font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: 0.01em;
-  color: #fff;
-  text-shadow: 0 0 60px rgba(120, 160, 255, 0.4), 0 6px 30px rgba(0, 0, 0, 0.45);
+  font-family: var(--font-mono, "JetBrains Mono", "Cascadia Code", "SF Mono", "Consolas", ui-monospace, monospace);
+  font-size: clamp(5.5rem, 18vw, 14rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  text-shadow: 0 0 70px rgba(120, 160, 255, 0.45), 0 4px 18px rgba(0, 0, 0, 0.65), 0 1px 0 rgba(0, 0, 0, 0.3);
   font-variant-numeric: tabular-nums;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.4rem;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 考试名称(配角:相对缩小) */
@@ -239,7 +240,7 @@
 
 /* 矮屏适配:压缩时钟,保证整体仍居中不溢出 */
 @media (max-height: 720px) {
-  .exam-clock { font-size: clamp(4rem, 15vh, 9rem); }
+  .exam-clock { font-size: clamp(4.2rem, 16vh, 9.5rem); letter-spacing: 0.03em; }
   .exam-center { gap: 0.9rem; }
 }
 
