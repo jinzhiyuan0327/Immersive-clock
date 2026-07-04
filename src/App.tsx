@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import styles from "./App.module.css";
 import AnnouncementModal from "./components/AnnouncementModal";
@@ -121,6 +122,7 @@ export function App() {
       />
       
       <Analytics />
+      <SpeedInsights />
     </div>
   );
 }
