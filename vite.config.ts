@@ -202,14 +202,7 @@ export default defineConfig(({ mode }) => {
       headers: {
         "Cache-Control": "no-cache",
       },
-      proxy: {
-        "/api/xiaomi-weather": {
-          target: "https://weatherapi.market.xiaomi.com",
-          changeOrigin: true,
-          secure: true,
-          rewrite: (proxyPath) => proxyPath.replace(/^\/api\/xiaomi-weather/, ""),
-        },
-      },
+      
     },
     build: {
       outDir: "dist",

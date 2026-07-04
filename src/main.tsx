@@ -8,6 +8,7 @@ import { AppContextProvider } from "./contexts/AppContext";
 import { getAppSettings } from "./utils/appSettings";
 import { initErrorCenterGlobalCapture, setErrorCenterMode } from "./utils/errorCenter";
 import { initializeStorage } from "./utils/storageInitializer";
+import { startAutoNtpSync } from "./services/ntpTimeService";
 
 import "./styles/global.css";
 import "./styles/tour.css";
@@ -34,6 +35,7 @@ initializeStorage();
 setErrorCenterMode(getAppSettings().study.alerts.errorCenterMode);
 initErrorCenterGlobalCapture();
 
+startAutoNtpSync();
 /**
  * 应用程序入口点
  * 设置React根节点，包装应用程序的提供者和路由

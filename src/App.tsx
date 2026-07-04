@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 
 import styles from "./App.module.css";
 import AnnouncementModal from "./components/AnnouncementModal";
@@ -7,6 +7,14 @@ import { Confetti } from "./components/Confetti/Confetti";
 import { ClockPage } from "./pages/ClockPage/ClockPage";
 import { shouldShowAnnouncement } from "./utils/announcementStorage";
 import { hasSeenTour } from "./utils/tour";
+import ExamPage from './pages/ExamPage';
+import WelcomePage from './pages/WelcomePage';
+import AdminPage from './pages/AdminPage';
+import './styles/exam.css';
+import './styles/welcome.css';
+import './styles/admin.css';
+import { getAppSettings, updateAppSettings } from "./utils/appSettings";
+import type { AppMode } from "./types";
 
 /**
  * 主应用组件
@@ -14,15 +22,18 @@ import { hasSeenTour } from "./utils/tour";
  * 包含首次访问时的进入动画和公告弹窗
  */
 export function App() {
+  const navigate = useNavigate();
   const [showEnterAnimation, setShowEnterAnimation] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [showTourConfetti, setShowTourConfetti] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(() => !getAppSettings().hasVisited);
 
   /**
    * 设置进入动画和公告弹窗
    * 在组件首次挂载时触发
    */
   useEffect(() => {
+    if (showWelcome) return; // ← 新增：欢迎页期间不启动动画/公告
     // 直接触发进入动画
     setShowEnterAnimation(true);
 
@@ -31,8 +42,9 @@ export function App() {
       setShowEnterAnimation(false);
     }, 1000); // 1秒动画时长
 
-    // 检查是否需要显示公告
     const checkAnnouncement = () => {
+      if (getAppSettings().exam?.announcementPermanentlyHidden) return;
+
       if (shouldShowAnnouncement()) {
         // 如果用户未看过指引，则等待指引结束
         if (!hasSeenTour()) {
@@ -72,12 +84,23 @@ export function App() {
       window.removeEventListener("tour:start", onTourStart);
       window.removeEventListener("tour:completed", onTourCompleted);
     };
-  }, []); // 空依赖数组确保只在组件挂载时执行一次
+  }, [showWelcome]); // 欢迎页关闭后再启动进入动画/公告
+  
+  function handleWelcomeSelect(mode: AppMode) {
+   updateAppSettings({ hasVisited: true }); // ← 新增：持久化
+   setShowWelcome(false);
+   navigate(mode === 'exam' ? '/exam' : '/');
+  }
 
+  if (showWelcome) {
+  return <WelcomePage onSelectMode={handleWelcomeSelect} />;
+  }
   return (
     <div className={`${styles.app} ${showEnterAnimation ? styles.enterAnimation : ""}`}>
       <Routes>
         <Route path="/" element={<ClockPage />} />
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/exam" element={<ExamPage />} />
         <Route path="*" element={<ClockPage />} />
       </Routes>
 

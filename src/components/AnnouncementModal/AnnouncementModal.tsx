@@ -15,6 +15,7 @@ import modalStyles from "../Modal/Modal.module.css";
 import { Tabs } from "../Tabs/Tabs";
 
 import styles from "./AnnouncementModal.module.css";
+import { getAppSettings, updateExamSettings } from "../../utils/appSettings";
 
 /**
  * 公告选项卡配置
@@ -59,6 +60,10 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   // 是否勾选"一周内不再显示"
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  // 👇 新增：是否"永久不再显示"
+  const [permanentlyHidden, setPermanentlyHidden] = useState(
+  () => getAppSettings().exam?.announcementPermanentlyHidden ?? false
+);
   // Markdown文档状态
   const [documents, setDocuments] = useState<Record<MarkdownAnnouncementTab, MarkdownDocument>>({
     announcement: { content: "", loading: true, filename: "announcement.md" },
@@ -198,7 +203,14 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
               onChange={(e) => setDontShowAgain(e.target.checked)}
             />
           </div>
-
+            <FormCheckbox
+             label="永久不再显示"
+             checked={permanentlyHidden}
+             onChange={(e) => {
+               setPermanentlyHidden(e.target.checked);
+               updateExamSettings({ announcementPermanentlyHidden: e.target.checked });
+        }}
+      />
           <FormButtonGroup>
             <FormButton onClick={handleClose} variant="primary">
               确定

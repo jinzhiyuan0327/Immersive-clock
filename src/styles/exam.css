@@ -1,0 +1,44 @@
+/* ===== 考试模式主页面 ===== */
+.exam-page { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color, #0d0d0d); color: var(--text-color, #f0f0f0); font-family: var(--font-main, 'Roboto Mono', monospace); user-select: none; }
+.exam-notify-banner { position: fixed; top: 0; left: 0; right: 0; padding: 16px 24px; display: flex; align-items: center; gap: 14px; z-index: 9999; color: #fff; font-size: 1.1rem; font-weight: 600; animation: examNotifySlideDown 0.35s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+.exam-notify-banner__icon { font-size: 1.5rem; flex-shrink: 0; }
+.exam-notify-banner__msg { flex: 1; }
+.exam-notify-banner__close { background: none; border: none; color: rgba(255,255,255,0.8); font-size: 1.4rem; cursor: pointer; line-height: 1; padding: 0 4px; flex-shrink: 0; }
+.exam-notify-banner__close:hover { color: #fff; }
+@keyframes examNotifySlideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.exam-center { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 40px; width: 100%; max-width: 900px; }
+.exam-clock { font-size: clamp(5rem, 16vw, 12rem); font-weight: 200; letter-spacing: 0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+.exam-name { font-size: clamp(1.4rem, 3.5vw, 2.4rem); font-weight: 500; opacity: 0.85; }
+.exam-status { font-size: clamp(1.6rem, 4vw, 3rem); font-weight: 600; font-variant-numeric: tabular-nums; }
+.exam-status--waiting { color: #3498db; }
+.exam-status--ongoing { color: #2ecc71; }
+.exam-status--ended   { color: #6c757d; }
+.exam-progress-wrap { width: min(680px, 80vw); height: 12px; background: rgba(255,255,255,0.12); border-radius: 6px; position: relative; overflow: hidden; }
+.exam-progress-bar { height: 100%; border-radius: 6px; transition: width 1s linear, background 0.5s; }
+.exam-progress-label { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: rgba(255,255,255,0.7); }
+.exam-time-detail { font-size: 1rem; opacity: 0.5; font-variant-numeric: tabular-nums; }
+.exam-empty { font-size: 1.2rem; opacity: 0.5; margin-top: 20px; }
+/* ===== 考试设置面板 ===== */
+.exam-settings { padding: 16px 0; display: flex; flex-direction: column; gap: 16px; }
+.exam-settings__title { font-size: 1rem; font-weight: 600; margin: 0; }
+.exam-settings__switch { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; }
+.exam-settings__form { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.exam-settings__form h4 { margin: 0 0 4px; font-size: 0.9rem; font-weight: 600; opacity: 0.8; }
+.exam-settings__form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; opacity: 0.75; }
+.exam-settings__form input[type="text"], .exam-settings__form input[type="datetime-local"] { padding: 7px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: inherit; font-size: 0.9rem; outline: none; }
+.exam-settings__error { color: #e74c3c; font-size: 0.85rem; margin: 0; }
+.exam-settings__actions { display: flex; gap: 8px; margin-top: 4px; }
+.exam-settings__list { display: flex; flex-direction: column; gap: 8px; }
+.exam-settings__empty { font-size: 0.85rem; opacity: 0.45; margin: 0; }
+.exam-settings__item { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.exam-settings__item--disabled { opacity: 0.45; }
+.exam-settings__item-info { display: flex; flex-direction: column; gap: 3px; font-size: 0.85rem; }
+.exam-settings__item-info strong { font-size: 0.95rem; }
+.exam-settings__item-info span { opacity: 0.6; font-size: 0.8rem; }
+.exam-settings__item-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.btn { padding: 7px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.85rem; background: rgba(255,255,255,0.1); color: inherit; }
+.btn--primary { background: #3498db; color: #fff; }
+.btn--danger { color: #e74c3c; }
+.exam-tag { font-size: 0.7rem; padding: 2px 7px; border-radius: 4px; background: rgba(255,255,255,0.08); }
+.exam-tag--on { background: rgba(46,204,113,0.2); color: #2ecc71; }
+.announcement-permanent-hide { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; opacity: 0.7; cursor: pointer; margin-top: 8px; }

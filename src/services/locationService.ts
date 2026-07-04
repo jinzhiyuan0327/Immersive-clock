@@ -85,9 +85,11 @@ let cachedAmapKey: string | null = null;
  * 从环境变量中获取并校验高德 Web API Key
  * @returns 校验后的高德 Web API Key
  */
-function getAmapKey(): string {
+function getAmapKey(): string | null {
   if (cachedAmapKey) return cachedAmapKey;
-  cachedAmapKey = requireEnv("VITE_AMAP_API_KEY", import.meta.env.VITE_AMAP_API_KEY);
+  const key = (import.meta.env.VITE_AMAP_API_KEY || '').trim();
+  if (!key) return null;
+  cachedAmapKey = key;
   return cachedAmapKey;
 }
 
@@ -232,7 +234,9 @@ export async function getCoordsViaGeolocation(): Promise<Coords | null> {
  * 失败返回 null
  */
 export async function getCoordsViaAmapIP(): Promise<Coords | null> {
-  const url = `https://restapi.amap.com/v3/ip?key=${encodeURIComponent(getAmapKey())}`;
+  const key = getAmapKey();
+  if (!key) return null;
+  const url = `https://restapi.amap.com/v3/ip?key=${encodeURIComponent(key)}`;
   try {
     const data = (await httpGetJson(url, undefined, 10000, {
       apiClass: "amap",
@@ -445,7 +449,9 @@ export async function reverseGeocodeOSM(lat: number, lon: number): Promise<Addre
  * 使用高德反向地理编码
  */
 export async function reverseGeocodeAmap(lat: number, lon: number): Promise<AddressInfo> {
-  const url = `https://restapi.amap.com/v3/geocode/regeo?key=${encodeURIComponent(getAmapKey())}&location=${encodeURIComponent(
+  const key = getAmapKey();
+  if (!key) return reverseGeocodeOSM(lat, lon);
+  const url = `https://restapi.amap.com/v3/geocode/regeo?key=${encodeURIComponent(key)}&location=${encodeURIComponent(
     `${lon},${lat}`
   )}&radius=100&extensions=base`;
   try {

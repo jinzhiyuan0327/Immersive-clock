@@ -6,6 +6,7 @@ import { getAppSettings, updateAppSettings, updateStudySettings } from "../utils
 import { setErrorCenterMode } from "../utils/errorCenter";
 import { getStartupModeFromSettings } from "../utils/startupMode";
 import { nowMs } from "../utils/timeSource";
+import { updateExamSettings } from '../utils/appSettings';
 
 /**
  * 从本地存储加载语录设置状态
@@ -83,6 +84,7 @@ const initialState: AppState = {
     lastShownTime: 0,
   },
   isModalOpen: false,
+  activeExamId: null,
 };
 
 /**
@@ -704,7 +706,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         quoteSettings: newQuoteSettings,
       };
-
+    case 'SET_EXAM_ITEMS':
+      updateExamSettings({ items: action.payload });
+      return state;
+    case 'SET_ACTIVE_EXAM':
+      return { ...state, activeExamId: action.payload };
     default:
       return state;
   }
