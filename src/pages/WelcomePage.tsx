@@ -3,6 +3,7 @@ import type { AppMode, ExamItem } from '../types';
 import { getAppSettings, updateAppSettings, updateExamSettings } from '../utils/appSettings';
 import { buildPresetExams } from '../data/presetExams';
 import { nowMs, parseZonedTime, formatDateTimeInZone } from '../utils/timeSource';
+import { useExamSync } from '../hooks/useExamSync';
 
 const AUTO_ENTER_SEC = 15;
 const DEFAULT_MODE: AppMode = 'study';
@@ -49,6 +50,12 @@ export default function WelcomePage({ onSelectMode }: WelcomePageProps) {
     if (items.length === 0) { items = buildPresetExams(); updateExamSettings({ items }); }
     setUpcomingExam(getUpcomingExam(items));
   }, []);
+
+  // 多设备同步：每 30s 拉取服务端，有更新则刷新即将到来的考试
+  useExamSync({
+    onUpdate: ({ items }) => setUpcomingExam(getUpcomingExam(items)),
+    intervalMs: 30_000,
+  });
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {

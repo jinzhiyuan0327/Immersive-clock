@@ -1,63 +1,48 @@
 import { useEffect, useRef } from 'react';
 import type { ExamItem } from '../types';
-import { updateExamSettings } from '../utils/appSettings';
-
-const POLL_INTERVAL_MS = 30_000; // 每 30 秒轮询一次，可按需调整
+import { getAppSettings, updateExamSettings } from '../utils/appSettings';
+import { fetchExamsFromServer } from '../services/examService';
 
 interface UseExamSyncOptions {
-  /** 收到新数据时的回调，传入最新 items */
-  onUpdate: (items: ExamItem[]) => void;
-  /** 是否启用轮询，默认 true */
-  enabled?: boolean;
-  /** 轮询间隔（毫秒），默认 30000 */
+  /** 当服务端有更新并写入本地后回调，用于刷新页面状态 */
+  onUpdate?: (data: { items: ExamItem[]; title: string }) => void;
+  /** 轮询间隔（毫秒），默认 30s */
   intervalMs?: number;
 }
 
 /**
- * 定时从服务端拉取最新考试数据。
- * - 首次挂载立即拉取一次
- * - 之后每隔 intervalMs 拉取一次
- * - 与上次数据相同时不触发 onUpdate（用 updatedAt 时间戳判断）
+ * 轮询服务端考试数据，仅当服务端 updatedAt 比本地新时才应用，
+ * 写入本地设置并回调 onUpdate。用于多设备实时同步（只读方向）。
  */
-export function useExamSync({
-  onUpdate,
-  enabled = true,
-  intervalMs = POLL_INTERVAL_MS,
-}: UseExamSyncOptions) {
-  const lastUpdatedAtRef = useRef<number>(0);
+export function useExamSync({ onUpdate, intervalMs = 30_000 }: UseExamSyncOptions = {}) {
+  const lastAppliedRef = useRef<number>(0);
   const onUpdateRef = useRef(onUpdate);
   onUpdateRef.current = onUpdate;
 
   useEffect(() => {
-    if (!enabled) return;
+    let cancelled = false;
 
-    async function fetchExams() {
-      try {
-        const res = await fetch('/api/exams', { cache: 'no-store' });
-        if (!res.ok) return;
-        const data = (await res.json()) as {
-          ok: boolean;
-          items: ExamItem[];
-          updatedAt: number;
-        };
-        if (!data.ok) return;
+    async function pull() {
+      const remote = await fetchExamsFromServer();
+      if (cancelled || !remote) return;
+      const localUpdatedAt = getAppSettings().exam?.updatedAt ?? 0;
+      const baseline = Math.max(lastAppliedRef.current, localUpdatedAt);
+      if (remote.updatedAt <= baseline) return;
 
-        // 仅当服务端数据比上次新时才更新
-        if (data.updatedAt > lastUpdatedAtRef.current) {
-          lastUpdatedAtRef.current = data.updatedAt;
-          // 同步到 localStorage（供断网时回退）
-          updateExamSettings({ items: data.items });
-          onUpdateRef.current(data.items);
-        }
-      } catch {
-        // 网络错误时静默失败，继续使用本地缓存
-      }
+      lastAppliedRef.current = remote.updatedAt;
+      updateExamSettings({
+        items: remote.items,
+        title: remote.title,
+        updatedAt: remote.updatedAt,
+      });
+      onUpdateRef.current?.({ items: remote.items, title: remote.title });
     }
 
-    // 立即执行一次
-    fetchExams();
-    // 之后定时执行
-    const timer = setInterval(fetchExams, intervalMs);
-    return () => clearInterval(timer);
-  }, [enabled, intervalMs]);
+    pull();
+    const id = setInterval(pull, intervalMs);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [intervalMs]);
 }

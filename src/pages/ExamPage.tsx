@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { ExamItem } from '../types';
 import { getAppSettings } from '../utils/appSettings';
 import { nowMs, formatClockInZone, parseZonedTime } from '../utils/timeSource';
 import { useExamNotify } from '../hooks/useExamNotify';
+import { useExamSync } from '../hooks/useExamSync';
 
 function pad(n: number) { return String(Math.floor(n)).padStart(2, '0'); }
 function formatHMS(ms: number) {
@@ -25,14 +27,22 @@ function pickActiveExam(items: ExamItem[]): ExamItem | null {
 }
 
 export default function ExamPage() {
+  const navigate = useNavigate();
   const [tick, setTick] = useState(0);
   const [exam, setExam] = useState<ExamItem | null>(null);
   const { notification, dismiss } = useExamNotify(exam);
+
+  // 多设备同步：每 30s 拉取服务端，有更新则刷新当前考试
+  useExamSync({
+    onUpdate: () => setExam(pickActiveExam(getAppSettings().exam?.items ?? [])),
+    intervalMs: 30_000,
+  });
 
   useEffect(() => { const id = setInterval(() => setTick(t => t + 1), 1000); return () => clearInterval(id); }, []);
   useEffect(() => { setExam(pickActiveExam(getAppSettings().exam?.items ?? [])); }, [tick]);
 
   const clockStr = formatClockInZone(nowMs());
+  const examTitle = getAppSettings().exam?.title ?? '';
 
   let phase: 'waiting' | 'ongoing' | 'ended' = 'waiting';
   let progress = 0, remainingMs = 0, elapsedMs = 0, totalMs = 0;
@@ -53,16 +63,24 @@ export default function ExamPage() {
   return (
     <div className="exam-page">
       {notification && (
-        <div className="exam-notify-banner" role="alert" style={{ background: notification.color }}>
+        <div className="exam-notify-banner" role="alert">
           <span className="exam-notify-banner__icon">{notification.icon}</span>
           <span className="exam-notify-banner__msg">{notification.message}</span>
           <button className="exam-notify-banner__close" onClick={dismiss}>×</button>
         </div>
       )}
+
+      {/* 顶部操作栏：返回主界面 / 考试管理 */}
+      <div className="exam-topbar">
+        <button className="exam-topbar__btn" onClick={() => navigate('/')}>← 返回主界面</button>
+        <button className="exam-topbar__btn" onClick={() => navigate('/admin')}>⚙ 考试管理</button>
+      </div>
+
       <div className="exam-center">
         <div className="exam-clock" aria-label="当前时间">{clockStr}</div>
         {exam ? (
           <>
+            {examTitle && <div className="exam-master-title">{examTitle}</div>}
             <div className="exam-name">{exam.name}</div>
             <div className={`exam-status exam-status--${phase}`}>
               {phase === 'waiting' && `距开始 ${formatHMS(remainingMs)}`}
@@ -80,7 +98,11 @@ export default function ExamPage() {
             )}
           </>
         ) : (
-          <div className="exam-empty">暂无考试安排，请前往 /#/admin 添加考试</div>
+          <div className="exam-empty">
+            <div className="exam-empty__icon">📋</div>
+            <p className="exam-empty__text">暂无考试安排</p>
+            <button className="exam-empty__btn" onClick={() => navigate('/admin')}>前往考试管理添加</button>
+          </div>
         )}
       </div>
     </div>

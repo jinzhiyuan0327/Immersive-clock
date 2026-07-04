@@ -60,9 +60,11 @@ export interface AppSettings {
   };
   hasVisited: boolean;
   exam: {
+  title: string;
   items: ExamItem[];
   alertEnabled: boolean;
   announcementPermanentlyHidden: boolean;
+  updatedAt?: number;
 };
 
   study: {
@@ -207,7 +209,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     alertSoundEnabled: false,
   },
   hasVisited: false,
-  exam: { items: [], alertEnabled: true, announcementPermanentlyHidden: false },
+  exam: { title: "2026年高考", items: [], alertEnabled: true, announcementPermanentlyHidden: false, updatedAt: 0 },
 };
 
 /**

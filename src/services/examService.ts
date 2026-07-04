@@ -1,39 +1,57 @@
 import type { ExamItem } from '../types';
 
-// 从环境变量读取管理员密码，与 api/exams.ts 中的 ADMIN_SECRET 对应
-// 在 .env.local 中配置 VITE_ADMIN_SECRET=你的密码
-const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET ?? '';
-
 /**
- * 将考试数据保存到服务端（Neon PostgreSQL）。
- * @returns 成功返回 true，失败返回 false（不抛出异常）
+ * 考试数据的服务端读写封装。
+ * 所有请求失败都会安全降级（返回 null），不影响本地离线使用。
  */
-export async function saveExamsToServer(items: ExamItem[]): Promise<boolean> {
-  try {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (ADMIN_SECRET) headers['Authorization'] = `Bearer ${ADMIN_SECRET}`;
 
-    const res = await fetch('/api/exams', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ items }),
+export interface ExamPayload {
+  items: ExamItem[];
+  title: string;
+  updatedAt: number;
+}
+
+const API_URL = '/api/exams';
+
+/** 从服务端拉取考试数据；失败返回 null（自动降级本地） */
+export async function fetchExamsFromServer(): Promise<ExamPayload | null> {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'GET',
+      headers: { 'Cache-Control': 'no-store' },
     });
-    const data = await res.json() as { ok: boolean };
-    return data.ok === true;
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data?.ok) return null;
+    return {
+      items: Array.isArray(data.items) ? data.items : [],
+      title: typeof data.title === 'string' ? data.title : '',
+      updatedAt: Number(data.updatedAt ?? 0),
+    };
   } catch {
-    return false;
+    return null;
   }
 }
 
-/**
- * 从服务端拉取考试数据（单次，不轮询）。
- */
-export async function fetchExamsFromServer(): Promise<ExamItem[] | null> {
+/** 保存考试数据到服务端；返回服务端 updatedAt 时间戳，失败返回 null */
+export async function saveExamsToServer(
+  items: ExamItem[],
+  title = ''
+): Promise<number | null> {
   try {
-    const res = await fetch('/api/exams', { cache: 'no-store' });
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const secret = (import.meta as any).env?.VITE_ADMIN_SECRET;
+    if (secret) headers['Authorization'] = `Bearer ${secret}`;
+
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ items, title }),
+    });
     if (!res.ok) return null;
-    const data = await res.json() as { ok: boolean; items: ExamItem[] };
-    return data.ok ? data.items : null;
+    const data = await res.json();
+    if (!data?.ok) return null;
+    return Number(data.updatedAt ?? Date.now());
   } catch {
     return null;
   }

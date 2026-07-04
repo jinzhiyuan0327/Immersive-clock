@@ -1,7 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { ExamItem } from '../types';
 import { getAppSettings, updateExamSettings } from '../utils/appSettings';
 import { buildPresetExams } from '../data/presetExams';
+import { saveExamsToServer, fetchExamsFromServer } from '../services/examService';
 import { nowMs, parseZonedTime, formatDateTimeInZone } from '../utils/timeSource';
 
 function genId() { return `exam_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`; }
@@ -32,30 +34,101 @@ function getStatus(item: ExamItem): { label: string; color: string } {
 const EMPTY_FORM = { name: '', startTime: '', endTime: '', enabled: true };
 
 export default function AdminPage() {
+  const navigate = useNavigate();
   const [items, setItems] = useState<ExamItem[]>([]);
+  const [examTitle, setExamTitle] = useState('');
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [editId, setEditId] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const [saved, setSaved] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'local_only'>('idle');
+  const examTitleRef = useRef('');
+  const itemsRef = useRef<ExamItem[]>([]);
+  const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [importText, setImportText] = useState('');
   const [showImport, setShowImport] = useState(false);
   const [importError, setImportError] = useState('');
 
+  // 同步 itemsRef，供保存/标题推送时读取最新列表
+  useEffect(() => { itemsRef.current = items; }, [items]);
+
+  // 初始化：优先从服务端拉取，服务端为空则用本地/预设回填服务端
   useEffect(() => {
-    let exams = (getAppSettings().exam?.items ?? []).slice().sort((a, b) => a.order - b.order);
-    if (exams.length === 0) { exams = buildPresetExams(); updateExamSettings({ items: exams }); }
-    setItems(exams);
+    let cancelled = false;
+    (async () => {
+      const settings = getAppSettings();
+      let exams = (settings.exam?.items ?? []).slice().sort((a, b) => a.order - b.order);
+      let title = settings.exam?.title ?? '';
+      const localUpdatedAt = settings.exam?.updatedAt ?? 0;
+
+      const remote = await fetchExamsFromServer();
+      if (!cancelled && remote) {
+        if (remote.updatedAt === 0 && (remote.items?.length ?? 0) === 0) {
+          // 服务端空库：用本地（或预设）数据初始化服务端
+          if (exams.length === 0) exams = buildPresetExams();
+          const ts = await saveExamsToServer(exams, title);
+          updateExamSettings({ items: exams, title, updatedAt: ts ?? Date.now() });
+        } else if (remote.updatedAt > localUpdatedAt) {
+          // 服务端较新：覆盖本地
+          exams = (remote.items ?? []).slice().sort((a, b) => a.order - b.order);
+          title = remote.title ?? '';
+          updateExamSettings({ items: exams, title, updatedAt: remote.updatedAt });
+        }
+      } else if (exams.length === 0) {
+        // 无网络且本地为空：用预设
+        exams = buildPresetExams();
+        updateExamSettings({ items: exams });
+      }
+
+      if (cancelled) return;
+      setItems(exams);
+      setExamTitle(title);
+      examTitleRef.current = title;
+      itemsRef.current = exams;
+    })();
+    return () => { cancelled = true; };
   }, []);
 
-  const saveItems = useCallback((next: ExamItem[]) => {
+  const saveItems = useCallback(async (next: ExamItem[]) => {
     const reordered = next.map((it, i) => ({ ...it, order: i }));
-    setItems(reordered); updateExamSettings({ items: reordered });
-    setSaved(true); setTimeout(() => setSaved(false), 2000);
+    const ts = Date.now();
+    setItems(reordered);
+    itemsRef.current = reordered;
+    updateExamSettings({ items: reordered, updatedAt: ts });
+    setSaveStatus('saving');
+    const serverTs = await saveExamsToServer(reordered, examTitleRef.current);
+    if (serverTs != null) {
+      updateExamSettings({ updatedAt: serverTs });
+      setSaveStatus('saved');
+    } else {
+      setSaveStatus('local_only');
+    }
+    setTimeout(() => setSaveStatus('idle'), 2500);
+  }, []);
+
+  /** 保存总考试名称（实时写入本地设置） */
+  const handleTitleChange = useCallback((value: string) => {
+    setExamTitle(value);
+    examTitleRef.current = value;
+    const ts = Date.now();
+    updateExamSettings({ title: value, updatedAt: ts });
+    setSaveStatus('saving');
+    // 标题频繁输入，防抖 800ms 后再推送服务端
+    if (titleTimerRef.current) clearTimeout(titleTimerRef.current);
+    titleTimerRef.current = setTimeout(async () => {
+      const serverTs = await saveExamsToServer(itemsRef.current, value);
+      if (serverTs != null) {
+        updateExamSettings({ updatedAt: serverTs });
+        setSaveStatus('saved');
+      } else {
+        setSaveStatus('local_only');
+      }
+      setTimeout(() => setSaveStatus('idle'), 2500);
+    }, 800);
   }, []);
 
   function validate() {
-    if (!form.name.trim()) return '请填写考试名称';
+    if (!form.name.trim()) return '请填写科目名称';
     if (!form.startTime) return '请填写开始时间';
     if (!form.endTime) return '请填写结束时间';
     if (new Date(toIso(form.endTime)) <= new Date(toIso(form.startTime))) return '结束时间必须晚于开始时间';
@@ -106,25 +179,34 @@ export default function AdminPage() {
     <div className="admin-page">
       <header className="admin-header">
         <div className="admin-header__left">
-          <button className="admin-back-btn" onClick={() => { window.location.hash = ''; }}>← 返回</button>
+          <button className="admin-back-btn" onClick={() => navigate('/exam')}>← 返回</button>
           <h1 className="admin-header__title">考试管理</h1>
         </div>
         <div className="admin-header__right">
-          {saved && <span className="admin-saved-badge">✓ 已保存</span>}
+          {saveStatus === 'saving' && <span className="admin-saved-badge" style={ { color: '#f39c12' } }>⟳ 保存中…</span>}
+          {saveStatus === 'saved' && <span className="admin-saved-badge" style={ { color: '#27ae60' } }>✓ 已同步云端</span>}
+          {saveStatus === 'local_only' && <span className="admin-saved-badge" style={ { color: '#e74c3c' } }>⚠ 仅本地（网络异常）</span>}
           <span className="admin-stat">{items.filter(i => i.enabled).length}/{items.length} 场启用</span>
           <button className="admin-btn admin-btn--ghost" onClick={() => setShowImport(v => !v)}>导入 JSON</button>
           <button className="admin-btn admin-btn--ghost" onClick={handleExport}>导出 JSON</button>
-          {items.length > 0 && <button className="admin-btn admin-btn--danger" onClick={() => { if (window.confirm('确定清空所有考试？')) saveItems([]); }}>清空全部</button>}
+          {items.length > 0 && <button className="admin-btn admin-btn--danger" onClick={() => { if (window.confirm('确定清空所有分考试？')) saveItems([]); }}>清空全部</button>}
         </div>
       </header>
       <div className="admin-body">
         <aside className="admin-sidebar">
+          <div className="admin-title-card">
+            <label className="admin-label">总考试名称
+              <input className="admin-input" type="text" placeholder="如：2026年高考" maxLength={30}
+                value={examTitle} onChange={e => handleTitleChange(e.target.value)} />
+            </label>
+            <p className="admin-title-card__hint">显示在考试大屏与欢迎页顶部，下方各科目为其分考试</p>
+          </div>
           <div className="admin-form-card">
-            <h2 className="admin-form-card__title">{editId ? '✏️ 编辑考试' : '➕ 添加考试'}</h2>
+            <h2 className="admin-form-card__title">{editId ? '✏️ 编辑分考试' : '➕ 添加分考试'}</h2>
             {error && <div className="admin-error">{error}</div>}
             <form onSubmit={handleSubmit} className="admin-form">
-              <label className="admin-label">考试名称
-                <input className="admin-input" type="text" placeholder="如：2026年高考 语文" maxLength={50}
+              <label className="admin-label">科目名称
+                <input className="admin-input" type="text" placeholder="如：语文" maxLength={50}
                   value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
                 <span className="admin-input-hint">{form.name.length}/50</span>
               </label>
@@ -144,7 +226,7 @@ export default function AdminPage() {
                 <span>启用（在大屏展示）</span>
               </label>
               <div className="admin-form-actions">
-                <button type="submit" className="admin-btn admin-btn--primary">{editId ? '保存修改' : '添加考试'}</button>
+                <button type="submit" className="admin-btn admin-btn--primary">{editId ? '保存修改' : '添加分考试'}</button>
                 {editId && <button type="button" className="admin-btn" onClick={cancelEdit}>取消</button>}
               </div>
             </form>
@@ -153,7 +235,7 @@ export default function AdminPage() {
             <h3 className="admin-tips__title">使用说明</h3>
             <ul>
               <li>修改会<strong>实时保存</strong>到浏览器本地</li>
-              <li>停用的考试不在大屏和欢迎页显示</li>
+              <li>停用的分考试不在大屏和欢迎页显示</li>
               <li>↑↓ 按钮调整显示顺序</li>
               <li>可导出 JSON 备份，跨设备导入</li>
             </ul>
@@ -161,11 +243,11 @@ export default function AdminPage() {
         </aside>
         <main className="admin-main">
           <div className="admin-list-header">
-            <h2 className="admin-list-title">考试列表</h2>
+            <h2 className="admin-list-title">分考试列表</h2>
             <span className="admin-list-count">{items.length} 条记录</span>
           </div>
           {items.length === 0 ? (
-            <div className="admin-empty"><div className="admin-empty__icon">📋</div><p>暂无考试，请在左侧添加</p></div>
+            <div className="admin-empty"><div className="admin-empty__icon">📋</div><p>暂无分考试，请在左侧添加</p></div>
           ) : (
             <div className="admin-list">
               {items.map((item, idx) => {
@@ -194,7 +276,7 @@ export default function AdminPage() {
                     <div className="admin-item__actions">
                       <button className={`admin-item-btn admin-item-btn--toggle${item.enabled?'':' admin-item-btn--off'}`}
                         onClick={() => saveItems(items.map(it => it.id === item.id ? { ...it, enabled: !it.enabled } : it))}>
-                        {item.enabled ? '启用' : '停用'}
+                        {item.enabled ? '停用' : '启用'}
                       </button>
                       <button className={`admin-item-btn admin-item-btn--edit${isEditing?' active':''}`}
                         onClick={() => isEditing ? cancelEdit() : startEdit(item)}>
@@ -228,7 +310,7 @@ export default function AdminPage() {
             <p className="admin-modal__body">粘贴考试数据 JSON，将<strong>覆盖</strong>当前所有数据。</p>
             {importError && <div className="admin-error">{importError}</div>}
             <textarea className="admin-textarea" rows={10} value={importText} onChange={e => setImportText(e.target.value)}
-              placeholder={'[\n  { "name": "考试名", "startTime": "2026-06-07T09:00:00", "endTime": "2026-06-07T11:30:00", "enabled": true }\n]'} />
+              placeholder={'[\n  { "name": "语文", "startTime": "2026-06-07T09:00:00", "endTime": "2026-06-07T11:30:00", "enabled": true }\n]'} />
             <div className="admin-modal__actions">
               <button className="admin-btn admin-btn--primary" onClick={handleImport}>导入并覆盖</button>
               <button className="admin-btn" onClick={() => { setShowImport(false); setImportError(''); }}>取消</button>

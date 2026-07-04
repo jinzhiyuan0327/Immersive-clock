@@ -14,6 +14,7 @@ import './styles/exam.css';
 import './styles/welcome.css';
 import './styles/admin.css';
 import { getAppSettings, updateAppSettings } from "./utils/appSettings";
+import { useAppDispatch } from "./contexts/AppContext";   // ← 新增
 import type { AppMode } from "./types";
 
 /**
@@ -23,6 +24,7 @@ import type { AppMode } from "./types";
  */
 export function App() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();   // ← 新增
   const [showEnterAnimation, setShowEnterAnimation] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [showTourConfetti, setShowTourConfetti] = useState(false);
@@ -30,23 +32,20 @@ export function App() {
 
   /**
    * 设置进入动画和公告弹窗
-   * 在组件首次挂载时触发
+   * 在欢迎页关闭后触发
    */
   useEffect(() => {
-    if (showWelcome) return; // ← 新增：欢迎页期间不启动动画/公告
-    // 直接触发进入动画
+    if (showWelcome) return; // 欢迎页期间不启动动画/公告
     setShowEnterAnimation(true);
 
-    // 动画完成后隐藏
     const timer = setTimeout(() => {
       setShowEnterAnimation(false);
-    }, 1000); // 1秒动画时长
+    }, 1000);
 
     const checkAnnouncement = () => {
       if (getAppSettings().exam?.announcementPermanentlyHidden) return;
 
       if (shouldShowAnnouncement()) {
-        // 如果用户未看过指引，则等待指引结束
         if (!hasSeenTour()) {
           const onTourEnd = () => {
             setShowAnnouncement(true);
@@ -56,16 +55,14 @@ export function App() {
           return;
         }
 
-        // 延迟显示公告，等待进入动画完成
         setTimeout(() => {
           setShowAnnouncement(true);
-        }, 1200); // 在进入动画完成后200ms显示
+        }, 1200);
       }
     };
 
     checkAnnouncement();
 
-    // 监听指引开始事件，强制关闭公告
     const onTourStart = () => {
       setShowAnnouncement(false);
     };
@@ -84,16 +81,26 @@ export function App() {
       window.removeEventListener("tour:start", onTourStart);
       window.removeEventListener("tour:completed", onTourCompleted);
     };
-  }, [showWelcome]); // 欢迎页关闭后再启动进入动画/公告
-  
+  }, [showWelcome]);
+
+  /**
+   * 欢迎页选择模式：
+   * - exam → 跳独立考试页
+   * - 其它 → 先把主界面的 mode 设置好，再进主界面（修复选自习却显示时钟的问题）
+   */
   function handleWelcomeSelect(mode: AppMode) {
-   updateAppSettings({ hasVisited: true }); // ← 新增：持久化
-   setShowWelcome(false);
-   navigate(mode === 'exam' ? '/exam' : '/');
+    updateAppSettings({ hasVisited: true });
+    setShowWelcome(false);
+    if (mode === 'exam') {
+      navigate('/exam');
+    } else {
+      dispatch({ type: 'SET_MODE', payload: mode });   // ← 关键修复
+      navigate('/');
+    }
   }
 
   if (showWelcome) {
-  return <WelcomePage onSelectMode={handleWelcomeSelect} />;
+    return <WelcomePage onSelectMode={handleWelcomeSelect} />;
   }
   return (
     <div className={`${styles.app} ${showEnterAnimation ? styles.enterAnimation : ""}`}>
@@ -106,7 +113,6 @@ export function App() {
 
       {showTourConfetti && <Confetti />}
 
-      {/* 公告弹窗 */}
       <AnnouncementModal
         isOpen={showAnnouncement}
         onClose={() => setShowAnnouncement(false)}
