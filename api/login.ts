@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createToken } from './_auth';
+import { createHmac } from 'node:crypto';
 
 /**
  * GET  /api/login  -> { ok, required }
@@ -16,6 +16,24 @@ function setCors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Cache-Control', 'no-store');
+}
+
+function base64urlEncode(input: string): string {
+  return Buffer.from(input, 'utf8')
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+
+function createToken(
+  secret: string,
+  ttlMs = 7 * 24 * 3600 * 1000
+): { token: string; expiresAt: number } {
+  const expiresAt = Date.now() + ttlMs;
+  const payload = base64urlEncode(JSON.stringify({ exp: expiresAt }));
+  const sig = createHmac('sha256', secret).update(payload).digest('hex');
+  return { token: `${payload}.${sig}`, expiresAt };
 }
 
 const TOKEN_TTL_MS = 7 * 24 * 3600 * 1000; // 7 天
