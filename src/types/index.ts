@@ -75,7 +75,7 @@ export interface MarkdownDocument {
  * stopwatch: 秒表模式
  * study: 自习模式
  */
-export type AppMode = "clock" | "countdown" | "stopwatch" | "study";
+export type AppMode = "clock" | "countdown" | "stopwatch" | "study" | "exam";
 
 /**
  * 倒计时状态接口
@@ -296,6 +296,7 @@ export interface AppState {
   announcement: AnnouncementState;
   /** 模态框是否打开 */
   isModalOpen: boolean;
+  activeExamId: string | null;
 }
 
 /**
@@ -352,4 +353,14 @@ export type AppAction =
   | { type: "SET_ERROR_POPUP_ENABLED"; payload: boolean }
   | { type: "SET_ERROR_CENTER_MODE"; payload: "off" | "memory" | "persist" }
   | { type: "SET_AIR_QUALITY_ALERT_ENABLED"; payload: boolean }
-  | { type: "SET_SUNRISE_SUNSET_ALERT_ENABLED"; payload: boolean };
+  | { type: "SET_SUNRISE_SUNSET_ALERT_ENABLED"; payload: boolean }
+  | { type: "SET_EXAM_ITEMS"; payload: ExamItem[] }
+  | { type: "SET_ACTIVE_EXAM"; payload: string | null }
+export interface ExamItem {
+  id: string;
+  name: string;
+  startTime: string;   // ISO 8601，如 "2026-06-07T09:00:00"
+  endTime: string;
+  enabled: boolean;
+  order: number;
+}

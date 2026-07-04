@@ -12,6 +12,7 @@ import { DeepPartial } from "../types/utilityTypes";
 
 import { logger } from "./logger";
 import { StudyBackgroundType } from "./studyBackgroundStorage";
+import type { ExamItem } from '../types';
 
 export interface AppSettings {
   version: number;
@@ -57,6 +58,14 @@ export interface AppSettings {
       lastError?: string;
     };
   };
+  hasVisited: boolean;
+  exam: {
+  title: string;
+  items: ExamItem[];
+  alertEnabled: boolean;
+  announcementPermanentlyHidden: boolean;
+  updatedAt?: number;
+};
 
   study: {
     targetYear: number;
@@ -199,6 +208,8 @@ const DEFAULT_SETTINGS: AppSettings = {
     reportRetentionDays: DEFAULT_NOISE_REPORT_RETENTION_DAYS,
     alertSoundEnabled: false,
   },
+  hasVisited: false,
+  exam: { title: "2026年高考", items: [], alertEnabled: true, announcementPermanentlyHidden: false, updatedAt: 0 },
 };
 
 /**
@@ -284,6 +295,12 @@ export function getAppSettings(): AppSettings {
         background: { ...DEFAULT_SETTINGS.study.background, ...(parsedStudy.background || {}) },
       },
       noiseControl: { ...DEFAULT_SETTINGS.noiseControl, ...parsed.noiseControl },
+      hasVisited: parsed.hasVisited ?? false,
+      exam: {
+        ...DEFAULT_SETTINGS.exam,
+        ...parsed.exam,
+        items: Array.isArray(parsed.exam?.items) ? parsed.exam.items : [],
+},
     };
   } catch (error) {
     logger.error("Failed to load AppSettings", error);
@@ -362,6 +379,8 @@ export function updateAppSettings(
           : current.general.timeSync,
       };
     }
+    if (typeof updates.hasVisited === 'boolean') nextSettings.hasVisited = updates.hasVisited;
+    if (updates.exam) nextSettings.exam = { ...current.exam, ...updates.exam };
     if (updates.study) {
       const studyUpdates = updates.study;
       nextSettings.study = {
@@ -454,4 +473,8 @@ export function updateNoiseSettings(updates: DeepPartial<AppSettings["noiseContr
   updateAppSettings((current) => ({
     noiseControl: { ...current.noiseControl, ...updates },
   }));
+}
+
+export function updateExamSettings(updates: Partial<AppSettings['exam']>): void {
+  updateAppSettings((current) => ({ exam: { ...current.exam, ...updates } }));
 }

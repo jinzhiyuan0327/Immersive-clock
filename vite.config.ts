@@ -157,7 +157,7 @@ export default defineConfig(({ mode }) => {
           ],
         },
         devOptions: {
-          enabled: true,
+          enabled: false,
         },
         manifest: (() => {
           try {
@@ -190,7 +190,7 @@ export default defineConfig(({ mode }) => {
     plugins,
     define: {
       "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
-      __ENABLE_PWA__: !isElectron,
+      __ENABLE_PWA__: !isElectron && mode === "production",
     },
     base: isElectron ? "./" : "/",
     server: {
@@ -202,14 +202,7 @@ export default defineConfig(({ mode }) => {
       headers: {
         "Cache-Control": "no-cache",
       },
-      proxy: {
-        "/api/xiaomi-weather": {
-          target: "https://weatherapi.market.xiaomi.com",
-          changeOrigin: true,
-          secure: true,
-          rewrite: (proxyPath) => proxyPath.replace(/^\/api\/xiaomi-weather/, ""),
-        },
-      },
+      
     },
     build: {
       outDir: "dist",
