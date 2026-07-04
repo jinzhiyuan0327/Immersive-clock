@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 
 import styles from "./App.module.css";
 import AnnouncementModal from "./components/AnnouncementModal";
@@ -118,6 +119,8 @@ export function App() {
         onClose={() => setShowAnnouncement(false)}
         initialTab="announcement"
       />
+      
+      <Analytics />
     </div>
   );
 }
