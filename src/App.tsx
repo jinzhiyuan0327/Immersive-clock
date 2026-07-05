@@ -30,7 +30,7 @@ export function App() {
   const [showEnterAnimation, setShowEnterAnimation] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [showTourConfetti, setShowTourConfetti] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(() => !getAppSettings().hasVisited);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   /**
    * 设置进入动画和公告弹窗
